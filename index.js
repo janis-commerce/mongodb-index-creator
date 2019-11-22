@@ -1,5 +1,13 @@
+#!/usr/bin/env node
+
 'use strict';
 
-const { MongodbIndexCreator } = require('./lib');
+const logger = require('lllog')();
 
-module.exports = MongodbIndexCreator;
+const MongodbIndexCreator = require('./lib/mongodb-index-creator');
+
+(async () => {
+
+	// autorun...
+
+})();

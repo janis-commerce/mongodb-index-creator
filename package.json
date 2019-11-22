@@ -2,7 +2,10 @@
   "name": "@janiscommerce/mongodb-index-creator",
   "version": "1.0.0",
   "description": "A package for build MongoDB indexes",
-  "main": "index.js",
+  "main": "lib/mongodb-index-creator.js",
+  "bin": {
+    "mongodb-index-creator": "index.js"
+  },
   "scripts": {
     "test": "export TEST_ENV=true; mocha --exit -R nyan --recursive tests/",
     "test-ci": "nyc --reporter=html --reporter=text mocha --recursive tests/",
@@ -31,5 +34,10 @@
   ],
   "directories": {
     "test": "tests"
+  },
+  "dependencies": {
+    "@janiscommerce/settings": "^1.0.1",
+    "lllog": "^1.1.2",
+    "mongodb": "^3.3.4"
   }
 }
