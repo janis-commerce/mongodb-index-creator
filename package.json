@@ -21,11 +21,13 @@
   "license": "ISC",
   "homepage": "https://github.com/janis-commerce/mongodb-index-creator.git#readme",
   "devDependencies": {
-    "husky": "^2.4.1",
+    "@janiscommerce/settings": "^1.0.1",
     "eslint": "^5.16.0",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.17.3",
+    "husky": "^2.4.1",
     "mocha": "^5.2.0",
+    "mongodb": "^3.3.5",
     "nyc": "^13.1.0",
     "sinon": "^7.3.2"
   },
@@ -36,9 +38,9 @@
     "test": "tests"
   },
   "dependencies": {
+    "@janiscommerce/database-dispatcher": "^2.0.0",
     "@janiscommerce/model": "^3.3.2",
     "@janiscommerce/mongodb": "^1.7.1",
-    "@janiscommerce/settings": "^1.0.1",
     "chalk": "^3.0.0",
     "lllog": "^1.1.2"
   }
