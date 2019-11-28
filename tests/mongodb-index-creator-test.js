@@ -572,7 +572,7 @@ describe('MongodbIndexCreator', () => {
 
 		it('Should create the core indexes when the core schemas file exists', async () => {
 
-			coreSchemasStub.get(() => { return { core: {} }; });
+			coreSchemasStub.get(() => ({ core: {} }));
 			clientSchemasStub.get(() => undefined);
 			mongodbIndexCreator.createCoreIndexes.returns();
 
@@ -584,7 +584,7 @@ describe('MongodbIndexCreator', () => {
 
 		it('Should throw when the createCoreIndexes process fails', async () => {
 
-			coreSchemasStub.get(() => { return { core: {} }; });
+			coreSchemasStub.get(() => ({ core: {} }));
 			clientSchemasStub.get(() => undefined);
 			mongodbIndexCreator.createCoreIndexes.throws();
 
@@ -600,7 +600,7 @@ describe('MongodbIndexCreator', () => {
 		it('Should create the client indexes when the client schemas file exists', async () => {
 
 			coreSchemasStub.get(() => undefined);
-			clientSchemasStub.get(() => { return { myCollection: [] }; });
+			clientSchemasStub.get(() => ({ myCollection: [] }));
 			mongodbIndexCreator.createClientIndexes.returns();
 
 			await mongodbIndexCreator.execute();
@@ -612,7 +612,7 @@ describe('MongodbIndexCreator', () => {
 		it('Should throw when the createClientIndexes process fails', async () => {
 
 			coreSchemasStub.get(() => undefined);
-			clientSchemasStub.get(() => { return { myCollection: [] }; });
+			clientSchemasStub.get(() => ({ myCollection: [] }));
 			mongodbIndexCreator.createClientIndexes.throws();
 
 			await assert.rejects(mongodbIndexCreator.execute(), {
