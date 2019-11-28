@@ -19,29 +19,6 @@ If you need more information about how to set the database configs, please check
 npx @janiscommerce/mongodb-index-creator
 ```
 
-## Errors
-
-The errors are informed with a `MongoDbIndexCreatorError`.
-This object has a code that can be useful for a correct error handling.
-The codes are the following:
-
-| Code | Description                    |
-|------|--------------------------------|
-| 1    | Core database config not found in config file       |
-| 2    | Client database config not found in config file     |
-| 3    | Invalid client database config in file              |
-| 4    | A databaseKey from schemas not found in config file |
-| 5    | MongoDB connection failed                           |
-| 6    | Failed to create core indexes                       |
-| 7    | Failed to create client indexes                     |
-| 8    | Invalid core schemas                                |
-| 9    | Invalid client schemas                              |
-| 10   | Invalid parameters for create indexes               |
-| 11   | Invalid collection name for create indexes          |
-| 12   | Invalid received indexes to create                  |
-| 13   | Invalid index to create                             |
-| 14   | Client Model fails to get clients                   |
-
 ## Examples
 This package will get the `core.js` and `clients.js` schemas from the directory `/path/to/root/schemas/mongo` and it will read the database settings
 for core and client databases using the config file located in `/path/to/root/{MS_PATH}/config/.janiscommercerc.json`.
@@ -98,3 +75,62 @@ module.exports = {
 ```sh
 npx @janiscommerce/mongodb-index-creator
 ```
+
+## Usage (as module)
+```js
+const MongodbIndexCreator = require('@janiscommerce/mongodb-index-creator');
+```
+
+## API
+
+### **`new mongodbIndexCreator(schemasPath)`**
+
+Constructs the MongodbIndexCreator instance, configuring the `schemasPath [String]`.
+
+### **`async createCoreIndexes(coreSchemas)`**
+
+Creates the indexes for the specified databaseKeys and collections in the `coreSchemas [Object]`.
+
+### **`async createClientIndexes(clientSchemas)`**
+
+Obtains the clients list then creates the indexes for each client database using the `clientSchemas [Object]`.
+
+### **`async execute(schemasPath)`**
+
+Obtain the core and clients schemas files from the received `schemasPath [Object]`, if this parameter not exist, the default `schemasPath` will be used.
+
+## Examples
+
+```js
+const MongodbIndexCreator = require('@janiscommerce/mongodb-index-creator');
+
+const mongodbIndexCreator = new MongodbIndexCreator();
+
+(async () => {
+
+	await mongodbIndexCreator.createCoreIndexes(coreSchemas);
+
+	await mongodbIndexCreator.createClientIndexes(clientSchemas);
+
+	await mongodbIndexCreator.execute();
+
+})();
+```
+
+## Errors
+
+The errors are informed with a `MongoDbIndexCreatorError`.
+This object has a code that can be useful for a correct error handling.
+The codes are the following:
+
+| Code | Description                                                     |
+|------|-----------------------------------------------------------------|
+| 1    | Invalid database type for received client or databaseKey config |
+| 2    | MongoDB connection failed                                       |
+| 3    | Failed to create core indexes                                   |
+| 4    | Failed to create client indexes                                 |
+| 5    | Invalid core schemas                                            |
+| 6    | Invalid client schemas                                          |
+| 7    | Invalid collections in client/core schemas                      |
+| 8    | Invalid collection indexes in client/core schemas               |
+| 9    | Model Client error                                              |

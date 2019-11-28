@@ -13,7 +13,7 @@ const ModelClient = require('../lib/model-client');
 const MongodbIndexCreator = require('../lib/mongodb-index-creator');
 const MongodbIndexCreatorError = require('../lib/mongodb-index-creator-error');
 
-require('lllog')('none');
+require('../lib/utils/colorful-lllog')('none');
 
 describe('MongodbIndexCreator', () => {
 
@@ -41,6 +41,57 @@ describe('MongodbIndexCreator', () => {
 
 			const mongodbIndexCreator = new MongodbIndexCreator('some-path');
 			assert.deepEqual(mongodbIndexCreator.schemasPath, 'some-path');
+		});
+	});
+
+	describe('Getters', () => {
+
+		let requireStub;
+
+		beforeEach(() => {
+			requireStub = sandbox.stub(module.constructor, '_load');
+		});
+
+		const mongodbIndexCreator = new MongodbIndexCreator();
+
+		it('Should return the core schemas from schemas path', async () => {
+
+			requireStub.returns({ core: {} });
+
+			assert.deepStrictEqual(mongodbIndexCreator.coreSchemas, { core: {} });
+
+			sandbox.assert.calledOnce(requireStub);
+			sandbox.assert.calledWithMatch(requireStub, path.join(process.cwd(), 'schemas', 'mongo', 'core'));
+		});
+
+		it('Should return undefined when the core schemas file require fails', async () => {
+
+			requireStub.throws();
+
+			assert.deepStrictEqual(mongodbIndexCreator.coreSchemas, undefined);
+
+			sandbox.assert.calledOnce(requireStub);
+			sandbox.assert.calledWithMatch(requireStub, path.join(process.cwd(), 'schemas', 'mongo', 'core'));
+		});
+
+		it('Should return the clients schemas from schemas path', async () => {
+
+			requireStub.returns({ myCollection: [] });
+
+			assert.deepStrictEqual(mongodbIndexCreator.clientSchemas, { myCollection: [] });
+
+			sandbox.assert.calledOnce(requireStub);
+			sandbox.assert.calledWithMatch(requireStub, path.join(process.cwd(), 'schemas', 'mongo', 'clients'));
+		});
+
+		it('Should return undefined when the client schemas file require fails', async () => {
+
+			requireStub.throws();
+
+			assert.deepStrictEqual(mongodbIndexCreator.clientSchemas, undefined);
+
+			sandbox.assert.calledOnce(requireStub);
+			sandbox.assert.calledWithMatch(requireStub, path.join(process.cwd(), 'schemas', 'mongo', 'clients'));
 		});
 	});
 
@@ -131,6 +182,24 @@ describe('MongodbIndexCreator', () => {
 			});
 
 			sandbox.assert.calledOnce(MongoClient.connect);
+		});
+
+		it('Should throw when the databaseKey config database type is not MongoDB', async () => {
+
+			setDatabaseConfig({
+				core: {
+					...fakeDbConfig,
+					type: 'mysql'
+				}
+			});
+
+			sandbox.stub(DatabaseDispatcher, '_getDBDriver')
+				.returns(new class MySQL {}());
+
+			await assert.rejects(mongodbIndexCreator.createCoreIndexes(fakeCoreSchemas), {
+				name: 'MongodbIndexCreatorError',
+				code: MongodbIndexCreatorError.codes.INVALID_DATABASE_TYPE
+			});
 		});
 
 		describe('Schemas file errors', () => {
@@ -435,6 +504,20 @@ describe('MongodbIndexCreator', () => {
 
 			setDatabaseWriteType('mysql');
 
+			sandbox.stub(DatabaseDispatcher, '_getDBDriver')
+				.returns(new class MySQL {}());
+
+			ModelClient.prototype.get
+				.returns([{
+					code: 'fake-client',
+					dbHost: 'fake-host',
+					dbDatabase: 'fake-db'
+				}]);
+
+			await assert.rejects(mongodbIndexCreator.createClientIndexes(fakeClientSchemas), {
+				name: 'MongodbIndexCreatorError',
+				code: MongodbIndexCreatorError.codes.INVALID_DATABASE_TYPE
+			});
 		});
 
 		describe('Schemas file errors', () => {

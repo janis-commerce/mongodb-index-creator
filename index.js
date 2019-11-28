@@ -24,5 +24,4 @@ const MongodbIndexCreator = require('./lib/mongodb-index-creator');
 
 		process.exit(1);
 	}
-
 })();

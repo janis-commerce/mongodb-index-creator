@@ -41,7 +41,6 @@
     "@janiscommerce/model": "^3.3.2",
     "@janiscommerce/mongodb": "^1.7.1",
     "@janiscommerce/settings": "^1.0.1",
-    "chalk": "^3.0.0",
     "lllog": "^1.1.2"
   }
 }
