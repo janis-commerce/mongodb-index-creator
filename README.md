@@ -11,17 +11,45 @@ npm install @janiscommerce/mongodb-index-creator
 ```
 
 ## Configuration
-This package uses a configuration file located in `/path/to/root/{MS_PATH/config/.janiscommercerc.json` to get the core and client database connection config.  
+This package uses a configuration file located in `/path/to/root/{MS_PATH}/config/.janiscommercerc.json` to get the core and client database connection config.  
 If you need more information about how to set the database configs, please check the following docs: [@janiscommerce/model](https://www.npmjs.com/package/@janiscommerce/model)
 
 ## Usage (command line)
+
+This package will get the schemas files from the source directory: `/path/to/root/schemas/mongo`, also will read the database settings
+for core and client databases using the config file located in `/path/to/root/{MS_PATH}/config/.janiscommercerc.json`.
+
+### Schemas files
+In order to create the MongoDB indexes this utility will read schemas files content, if any of these files not exists will be ignored, but if exists shouldn't be empty, must have at least the required structure, otherwise the utility will throw an error.
+
+The schemas path should contain the following files:
+
+- `core.js`: This file contains the schemas for core databases (databaseKey models).
+- `clients.js`: This file contains the schemas for client databases (session models).
+
+#### Core schemas file
+This file is an `[Object]` export with the following structure:
+- databaseKey (required): A `[String]` with the database key for the database where the indexes will be created
+	- collections (required): An `[Object array]` with each prefix properties that will be created
+		- prefix (required): An `[Object]` with the prefix properties
+			- name (optional): A `[String]` with the internal name of the MongoDB index
+			- key (required): An `[Object]` with the field and the index type for that field, for an ascending index use `1` or `-1` for a descending index
+			- unique (optional): `[Boolean]` Specify if the index will be unique
+
+#### Clients schemas file
+This file is an `[Object]` export with the following structure:
+- collections (required): An `[Object array]` with each prefix properties that will be created
+	- prefix (required): An `[Object]` with the prefix properties
+		- name (optional): A `[String]` with the internal name of the MongoDB index
+		- key (required): An `[Object]` with the field and the index type for that field, for an ascending index use `1` or `-1` for a descending index
+		- unique (optional): `[Boolean]` Specify if the index will be unique
+
+### Running the utility
 ```sh
 npx @janiscommerce/mongodb-index-creator
 ```
 
 ## Examples
-This package will get the `core.js` and `clients.js` schemas from the directory `/path/to/root/schemas/mongo` and it will read the database settings
-for core and client databases using the config file located in `/path/to/root/{MS_PATH}/config/.janiscommercerc.json`.
 
 ### Core schemas file example
 ```js
@@ -33,13 +61,13 @@ module.exports = {
 		'my-collection': [
 			{
 				name: 'my-indexes',
-				key: { myIndex: 1 }
+				key: { myIndex: 1 },
 				unique: true
 			}
 		]
 	},
 
-	'some-databaseKey': {
+	'other-database': {
 		'some-collection': [
 			{
 				key: { someIndex: 1 }
@@ -58,7 +86,7 @@ module.exports = {
 	'my-collection': [
 		{
 			name: 'my-indexes',
-			key: { myIndex: 1 }
+			key: { myIndex: 1 },
 			unique: true
 		}
 	],	
@@ -69,11 +97,6 @@ module.exports = {
 		}
 	]
 }
-```
-
-### Running the utility
-```sh
-npx @janiscommerce/mongodb-index-creator
 ```
 
 ## Usage (as module)
@@ -95,9 +118,9 @@ Creates the indexes for the specified databaseKeys and collections in the `coreS
 
 Obtains the clients list then creates the indexes for each client database using the `clientSchemas [Object]`.
 
-### **`async execute(schemasPath)`**
+### **`async execute(coreSchemas, clientSchemas)`**
 
-Obtain the core and clients schemas files from the received `schemasPath [Object]`, if this parameter not exist, the default `schemasPath` will be used.
+Creates the indexes into the database using the received `coreSchemas [Object]` and `clientSchemas [Object]`, if both params not exists, will used the files located in the `schemasPath`.
 
 ## Examples
 
@@ -112,10 +135,17 @@ const mongodbIndexCreator = new MongodbIndexCreator();
 
 	await mongodbIndexCreator.createClientIndexes(clientSchemas);
 
+	// execute with core and client schemas from files
 	await mongodbIndexCreator.execute();
+
+	// execute with specified core and client schemas
+	await mongodbIndexCreator.execute(coreSchemas, clientSchemas);
 
 })();
 ```
+
+## Notes
+- **If the schemas files contains indexes for collections that not exists in the target database, these collections will be created by MongoDB during the index creation process.**
 
 ## Errors
 
