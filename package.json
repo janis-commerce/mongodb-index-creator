@@ -23,10 +23,10 @@
   "devDependencies": {
     "eslint": "^5.16.0",
     "eslint-config-airbnb-base": "^13.1.0",
-    "eslint-plugin-import": "^2.17.3",
+    "eslint-plugin-import": "^2.19.1",
     "husky": "^2.4.1",
     "mocha": "^5.2.0",
-    "mongodb": "^3.3.5",
+    "mongodb": "^3.4.0",
     "nyc": "^13.1.0",
     "sinon": "^7.3.2"
   },
@@ -38,8 +38,8 @@
   },
   "dependencies": {
     "@janiscommerce/database-dispatcher": "^2.0.0",
-    "@janiscommerce/model": "^3.3.2",
-    "@janiscommerce/mongodb": "^1.7.1",
+    "@janiscommerce/model": "^3.3.3",
+    "@janiscommerce/mongodb": "^1.8.2",
     "@janiscommerce/settings": "^1.0.1",
     "lllog": "^1.1.2"
   }
