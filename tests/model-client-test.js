@@ -98,4 +98,23 @@ describe('Client Model', () => {
 			});
 		});
 	});
+
+	describe('Get by client code', () => {
+
+		it('Should return a client by client code', async () => {
+
+			sinon.stub(ModelClient.prototype, 'get')
+				.returns([
+					{
+						name: 'some-client',
+						code: 'some-client-code'
+					}
+				]);
+
+			assert.deepStrictEqual(await modelClient.getByClientCode('some-client-code'), {
+				name: 'some-client',
+				code: 'some-client-code'
+			});
+		});
+	});
 });
