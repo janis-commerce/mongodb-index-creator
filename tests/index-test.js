@@ -31,6 +31,7 @@ describe('index', () => {
 	it('Should run the index script and execute method for core and client databases', async () => {
 
 		setCoreSchemas({});
+
 		setClientSchemas({});
 
 		sandbox.stub(MongodbIndexCreator.prototype, 'executeForCoreDatabases')

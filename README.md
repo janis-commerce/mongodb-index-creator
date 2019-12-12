@@ -130,6 +130,10 @@ Creates the indexes for client databases using the schemas files located in the 
 
 Creates the indexes for the specified client by `clientCode` using the schemas files located in the `schemasPath`.
 
+### **`async execute()`**
+
+Creates the indexes for core and clients databases using the schemas files located in the `schemasPath`.
+
 ## Examples
 
 ```js
@@ -159,6 +163,9 @@ const mongodbIndexCreator = new MongodbIndexCreator();
 
 	// execute for specified client
 	await mongodbIndexCreator.executeForClientCode('some-client');
+
+	// execute for core and client databases
+	await mongodbIndexCreator.execute();
 
 })();
 ```
