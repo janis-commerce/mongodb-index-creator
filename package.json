@@ -1,6 +1,6 @@
 {
   "name": "@janiscommerce/mongodb-index-creator",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A package for build MongoDB indexes",
   "main": "lib/mongodb-index-creator.js",
   "bin": {
@@ -39,7 +39,7 @@
   "dependencies": {
     "@janiscommerce/database-dispatcher": "^2.0.0",
     "@janiscommerce/model": "^3.3.3",
-    "@janiscommerce/mongodb": "^1.8.2",
+    "@janiscommerce/mongodb": "^1.8.3",
     "@janiscommerce/settings": "^1.0.1",
     "lllog": "^1.1.2"
   }
