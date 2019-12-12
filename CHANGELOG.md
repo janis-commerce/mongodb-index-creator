@@ -9,9 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - `executeForClientCode` method for creating indexes for the specified client databases
 - Automatically creates, skip and drop the indexes on target DB by comparing it with schemas files
-
-### Changed
-- `execute` method splitted into `executeForCoreDatabases` and `executeForClientDatabases`
+- `executeForCoreDatabases` and `executeForClientDatabases` methods
 
 ## [1.0.0] - 2019-12-10
 ### Added
