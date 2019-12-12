@@ -32,7 +32,7 @@ This file is an `[Object]` export with the following structure:
 - databaseKey (required): A `[String]` with the database key for the database where the indexes will be created
 	- collections (required): An `[Object array]` with each prefix properties that will be created
 		- prefix (required): An `[Object]` with the prefix properties
-			- name (optional): A `[String]` with the internal name of the MongoDB index
+			- name (required): A `[String]` with the internal name of the MongoDB index
 			- key (required): An `[Object]` with the field and the index type for that field, for an ascending index use `1` or `-1` for a descending index
 			- unique (optional): `[Boolean]` Specify if the index will be unique
 
@@ -40,7 +40,7 @@ This file is an `[Object]` export with the following structure:
 This file is an `[Object]` export with the following structure:
 - collections (required): An `[Object array]` with each prefix properties that will be created
 	- prefix (required): An `[Object]` with the prefix properties
-		- name (optional): A `[String]` with the internal name of the MongoDB index
+		- name (required): A `[String]` with the internal name of the MongoDB index
 		- key (required): An `[Object]` with the field and the index type for that field, for an ascending index use `1` or `-1` for a descending index
 		- unique (optional): `[Boolean]` Specify if the index will be unique
 
@@ -110,17 +110,25 @@ const MongodbIndexCreator = require('@janiscommerce/mongodb-index-creator');
 
 Constructs the MongodbIndexCreator instance, configuring the `schemasPath [String]`.
 
-### **`async createCoreIndexes(coreSchemas)`**
+### **`async createCoreIndexes()`**
 
-Creates the indexes for the specified databaseKeys and collections in the `coreSchemas [Object]`.
+Creates the indexes for the specified databaseKeys and collections in the core schemas file.
 
-### **`async createClientIndexes(clientSchemas)`**
+### **`async createClientIndexes(clients)`**
 
-Obtains the clients list then creates the indexes for each client database using the `clientSchemas [Object]`.
+Creates the indexes for each client in `clients [Object array]` using the client schemas file.
 
-### **`async execute(coreSchemas, clientSchemas)`**
+### **`async executeForCoreDatabases()`**
 
-Creates the indexes into the database using the received `coreSchemas [Object]` and `clientSchemas [Object]`, if both params not exists, will used the files located in the `schemasPath`.
+Creates the indexes for core databases using the schemas files located in the `schemasPath`.
+
+### **`async executeForClientDatabases()`**
+
+Creates the indexes for client databases using the schemas files located in the `schemasPath`.
+
+### **`async executeForClientCode(clientCode)`**
+
+Creates the indexes for the specified client by `clientCode` using the schemas files located in the `schemasPath`.
 
 ## Examples
 
@@ -131,15 +139,26 @@ const mongodbIndexCreator = new MongodbIndexCreator();
 
 (async () => {
 
-	await mongodbIndexCreator.createCoreIndexes(coreSchemas);
+	// create the indexes for core databases (without logger messages)
+	await mongodbIndexCreator.createCoreIndexes();
 
-	await mongodbIndexCreator.createClientIndexes(clientSchemas);
+	// create the indexes for client databases (without logger messages)
+	await mongodbIndexCreator.createClientIndexes([
+		{
+			name: 'some-client',
+			code: 'some-client'
+			// client object...
+		}
+	]);
 
-	// execute with core and client schemas from files
-	await mongodbIndexCreator.execute();
+	// execute for core databases
+	await mongodbIndexCreator.executeForCoreDatabases();
 
-	// execute with specified core and client schemas
-	await mongodbIndexCreator.execute(coreSchemas, clientSchemas);
+	// execute for client databases
+	await mongodbIndexCreator.executeForClientDatabases();
+
+	// execute for specified client
+	await mongodbIndexCreator.executeForClientCode('some-client');
 
 })();
 ```
@@ -157,10 +176,8 @@ The codes are the following:
 |------|-----------------------------------------------------------------|
 | 1    | Invalid database type for received client or databaseKey config |
 | 2    | MongoDB connection failed                                       |
-| 3    | Failed to create core indexes                                   |
-| 4    | Failed to create client indexes                                 |
-| 5    | Invalid core schemas                                            |
-| 6    | Invalid client schemas                                          |
-| 7    | Invalid collections in client/core schemas                      |
-| 8    | Invalid collection indexes in client/core schemas               |
-| 9    | Model Client error                                              |
+| 3    | Invalid core schemas                                            |
+| 4    | Invalid client schemas                                          |
+| 5    | Invalid collections in client/core schemas                      |
+| 6    | Invalid collection indexes in client/core schemas               |
+| 7    | Model Client error                                              |

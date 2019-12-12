@@ -12,7 +12,9 @@ const MongodbIndexCreator = require('./lib/mongodb-index-creator');
 
 	try {
 
-		await mongodbIndexCreator.execute();
+		await mongodbIndexCreator.executeForCoreDatabases();
+
+		await mongodbIndexCreator.executeForClientDatabases();
 
 		logger.info('Operation completed successfully.');
 
