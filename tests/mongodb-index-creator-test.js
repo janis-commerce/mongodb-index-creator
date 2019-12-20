@@ -196,6 +196,11 @@ describe('MongodbIndexCreator', () => {
 			FakeMongoDB.prototype.indexes.onFirstCall()
 				.returns([
 					{
+						name: '_id_',
+						key: { _id: 1 },
+						unique: true
+					},
+					{
 						name: 'existingIndex',
 						key: { existingIndex: 1 }
 					}
@@ -204,6 +209,11 @@ describe('MongodbIndexCreator', () => {
 			FakeMongoDB.prototype.indexes.onSecondCall()
 				.returns([
 					{
+						name: '_id_',
+						key: { _id: 1 },
+						unique: true
+					},
+					{
 						name: 'existingIndex',
 						key: { existingIndex: 1 }
 					}
@@ -211,6 +221,11 @@ describe('MongodbIndexCreator', () => {
 
 			FakeMongoDB.prototype.indexes.onThirdCall()
 				.returns([
+					{
+						name: '_id_',
+						key: { _id: 1 },
+						unique: true
+					},
 					{
 						name: 'deprecatedIndex',
 						key: { deprecatedIndex: 1 }
