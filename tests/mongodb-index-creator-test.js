@@ -4,9 +4,11 @@ const path = require('path');
 const assert = require('assert');
 const sandbox = require('sinon').createSandbox();
 
-const { MongoClient } = require('mongodb');
+const Model = require('@janiscommerce/model');
 
-const DatabaseDispatcher = require('@janiscommerce/database-dispatcher');
+const Settings = require('@janiscommerce/settings');
+
+const { MongoClient } = require('mongodb');
 
 const ModelClient = require('../lib/model-client');
 
@@ -36,35 +38,12 @@ describe('MongodbIndexCreator', () => {
 	};
 
 	const setDatabaseConfig = config => {
-		sandbox.stub(DatabaseDispatcher, 'config')
-			.get(() => config);
+		sandbox.stub(Settings, 'get')
+			.withArgs('database')
+			.returns(config);
 	};
 
-	class FakeMongoDB {
-
-		indexes() {}
-
-		createIndex() {}
-
-		dropIndexes() {}
-
-		collection() {
-			return {
-				indexes: this.indexes.bind(this),
-				createIndex: this.createIndex.bind(this),
-				dropIndexes: this.dropIndexes.bind(this)
-			};
-		}
-
-		db() {
-			return {
-				collection: this.collection.bind(this)
-			};
-		}
-	}
-
 	afterEach(() => {
-		DatabaseDispatcher.clearCache();
 		sandbox.restore();
 	});
 
@@ -180,20 +159,15 @@ describe('MongodbIndexCreator', () => {
 
 			setCoreSchemas(fakeCoreSchemas);
 
-			sandbox.stub(MongoClient, 'connect')
-				.returns(new FakeMongoDB());
+			sandbox.stub(Model.prototype, 'createIndexes')
+				.returns(true);
 
-			sandbox.spy(FakeMongoDB.prototype, 'db');
+			sandbox.stub(Model.prototype, 'dropIndexes')
+				.returns(true);
 
-			sandbox.stub(FakeMongoDB.prototype, 'createIndex')
-				.returns();
+			sandbox.stub(Model.prototype, 'getIndexes');
 
-			sandbox.stub(FakeMongoDB.prototype, 'dropIndexes')
-				.returns();
-
-			sandbox.stub(FakeMongoDB.prototype, 'indexes');
-
-			FakeMongoDB.prototype.indexes.onFirstCall()
+			Model.prototype.getIndexes.onFirstCall()
 				.returns([
 					{
 						name: '_id_',
@@ -206,7 +180,7 @@ describe('MongodbIndexCreator', () => {
 					}
 				]);
 
-			FakeMongoDB.prototype.indexes.onSecondCall()
+			Model.prototype.getIndexes.onSecondCall()
 				.returns([
 					{
 						name: '_id_',
@@ -219,7 +193,7 @@ describe('MongodbIndexCreator', () => {
 					}
 				]);
 
-			FakeMongoDB.prototype.indexes.onThirdCall()
+			Model.prototype.getIndexes.onThirdCall()
 				.returns([
 					{
 						name: '_id_',
@@ -234,64 +208,14 @@ describe('MongodbIndexCreator', () => {
 
 			await mongodbIndexCreator.createCoreIndexes();
 
-			sandbox.assert.calledTwice(MongoClient.connect);
+			sandbox.assert.calledThrice(Model.prototype.getIndexes);
 
-			sandbox.assert.calledTwice(FakeMongoDB.prototype.db);
-			sandbox.assert.calledWithExactly(FakeMongoDB.prototype.db.getCall(0), 'core');
-			sandbox.assert.calledWithExactly(FakeMongoDB.prototype.db.getCall(1), 'some-core-db');
+			sandbox.assert.calledOnce(Model.prototype.dropIndexes);
+			sandbox.assert.calledWithExactly(Model.prototype.dropIndexes, ['deprecatedIndex']);
 
-			sandbox.assert.calledThrice(FakeMongoDB.prototype.indexes);
-
-			sandbox.assert.calledOnce(FakeMongoDB.prototype.dropIndexes);
-			sandbox.assert.calledWithExactly(FakeMongoDB.prototype.dropIndexes, ['deprecatedIndex']);
-
-			sandbox.assert.calledTwice(FakeMongoDB.prototype.createIndex);
-			sandbox.assert.calledWithExactly(FakeMongoDB.prototype.createIndex.getCall(0), { myIndex: 1 }, { name: 'myIndex', unique: true });
-			sandbox.assert.calledWithExactly(FakeMongoDB.prototype.createIndex.getCall(1), { someIndex: 1 }, { name: 'someIndex' });
-		});
-
-		it('Should throw when can\'t connect to target MongoDB database', async () => {
-
-			setDatabaseConfig({
-				core: fakeDbConfig,
-				someDatabaseKey: {
-					...fakeDbConfig,
-					host: 'fake-core-host',
-					database: 'fake-core-db'
-				}
-			});
-
-			setCoreSchemas(fakeCoreSchemas);
-
-			sandbox.stub(MongoClient, 'connect')
-				.throws();
-
-			await assert.rejects(mongodbIndexCreator.createCoreIndexes(), {
-				name: 'MongodbIndexCreatorError',
-				code: MongodbIndexCreatorError.codes.MONGODB_CONNECTION_FAILED
-			});
-
-			sandbox.assert.calledOnce(MongoClient.connect);
-		});
-
-		it('Should throw when the databaseKey config database type is not MongoDB', async () => {
-
-			setDatabaseConfig({
-				core: {
-					...fakeDbConfig,
-					type: 'mysql'
-				}
-			});
-
-			setCoreSchemas(fakeCoreSchemas);
-
-			sandbox.stub(DatabaseDispatcher, '_getDBDriver')
-				.returns(new class MySQL {}());
-
-			await assert.rejects(mongodbIndexCreator.createCoreIndexes(), {
-				name: 'MongodbIndexCreatorError',
-				code: MongodbIndexCreatorError.codes.INVALID_DATABASE_TYPE
-			});
+			sandbox.assert.calledTwice(Model.prototype.createIndexes);
+			sandbox.assert.calledWithExactly(Model.prototype.createIndexes.getCall(0), [{ name: 'myIndex', key: { myIndex: 1 }, unique: true }]);
+			sandbox.assert.calledWithExactly(Model.prototype.createIndexes.getCall(1), [{ name: 'someIndex', key: { someIndex: 1 } }]);
 		});
 
 		describe('Schemas file errors', () => {
@@ -369,18 +293,21 @@ describe('MongodbIndexCreator', () => {
 		};
 
 		const setClientConfig = config => {
-			sandbox.stub(DatabaseDispatcher, 'clientConfig')
-				.get(() => config);
+			sandbox.stub(Settings, 'get')
+				.withArgs('client')
+				.returns(config);
 		};
 
 		const setDatabaseWriteType = type => {
-			sandbox.stub(DatabaseDispatcher, 'databaseWriteType')
-				.get(() => type);
+			sandbox.stub(Settings, 'get')
+				.withArgs('databaseWriteType')
+				.returns(type);
 		};
 
 		const setDatabaseReadType = type => {
-			sandbox.stub(DatabaseDispatcher, 'databaseReadType')
-				.get(() => type);
+			sandbox.stub(Settings, 'get')
+				.withArgs('databaseReadType')
+				.returns(type);
 		};
 
 		beforeEach(() => {
