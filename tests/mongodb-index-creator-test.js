@@ -8,8 +8,6 @@ const Model = require('@janiscommerce/model');
 
 const Settings = require('@janiscommerce/settings');
 
-const { MongoClient } = require('mongodb');
-
 const ModelClient = require('../lib/model-client');
 
 const MongodbIndexCreator = require('../lib/mongodb-index-creator');
@@ -159,11 +157,23 @@ describe('MongodbIndexCreator', () => {
 
 			setCoreSchemas(fakeCoreSchemas);
 
-			sandbox.stub(Model.prototype, 'createIndexes')
+			sandbox.stub(Model.prototype, 'createIndexes');
+
+			Model.prototype.createIndexes
 				.returns(true);
 
-			sandbox.stub(Model.prototype, 'dropIndexes')
+			Model.prototype.createIndexes
+				.onSecondCall()
+				.returns(false);
+
+			sandbox.stub(Model.prototype, 'dropIndexes');
+
+			Model.prototype.dropIndexes
 				.returns(true);
+
+			Model.prototype.dropIndexes
+				.onSecondCall()
+				.returns(false);
 
 			sandbox.stub(Model.prototype, 'getIndexes');
 
@@ -190,6 +200,10 @@ describe('MongodbIndexCreator', () => {
 					{
 						name: 'existingIndex',
 						key: { existingIndex: 1 }
+					},
+					{
+						name: 'deprecatedIndex',
+						key: { deprecatedIndex: 1 }
 					}
 				]);
 
@@ -201,17 +215,19 @@ describe('MongodbIndexCreator', () => {
 						unique: true
 					},
 					{
-						name: 'deprecatedIndex',
-						key: { deprecatedIndex: 1 }
+						name: 'otherDeprecatedIndex',
+						key: { otherDeprecatedIndex: 1 }
 					}
+
 				]);
 
 			await mongodbIndexCreator.createCoreIndexes();
 
 			sandbox.assert.calledThrice(Model.prototype.getIndexes);
 
-			sandbox.assert.calledOnce(Model.prototype.dropIndexes);
-			sandbox.assert.calledWithExactly(Model.prototype.dropIndexes, ['deprecatedIndex']);
+			sandbox.assert.calledTwice(Model.prototype.dropIndexes);
+			sandbox.assert.calledWithExactly(Model.prototype.dropIndexes.getCall(0), ['deprecatedIndex']);
+			sandbox.assert.calledWithExactly(Model.prototype.dropIndexes.getCall(1), ['otherDeprecatedIndex']);
 
 			sandbox.assert.calledTwice(Model.prototype.createIndexes);
 			sandbox.assert.calledWithExactly(Model.prototype.createIndexes.getCall(0), [{ name: 'myIndex', key: { myIndex: 1 }, unique: true }]);
@@ -293,40 +309,32 @@ describe('MongodbIndexCreator', () => {
 		};
 
 		const setClientConfig = config => {
-			sandbox.stub(Settings, 'get')
-				.withArgs('client')
+			Settings.get.withArgs('client')
 				.returns(config);
 		};
 
 		const setDatabaseWriteType = type => {
-			sandbox.stub(Settings, 'get')
-				.withArgs('databaseWriteType')
+			Settings.get.withArgs('databaseWriteType')
 				.returns(type);
 		};
 
 		const setDatabaseReadType = type => {
-			sandbox.stub(Settings, 'get')
-				.withArgs('databaseReadType')
+			Settings.get.withArgs('databaseReadType')
 				.returns(type);
 		};
 
 		beforeEach(() => {
 
-			sandbox.stub(MongoClient, 'connect')
-				.returns(new FakeMongoDB());
+			sandbox.stub(Settings, 'get');
 
-			sandbox.spy(FakeMongoDB.prototype, 'db');
+			sandbox.stub(Model.prototype, 'createIndexes')
+				.returns(true);
 
-			sandbox.stub(FakeMongoDB.prototype, 'createIndex')
-				.returns();
+			sandbox.stub(Model.prototype, 'dropIndexes')
+				.returns(true);
 
-			sandbox.stub(FakeMongoDB.prototype, 'dropIndexes')
-				.returns();
-
-			sandbox.stub(FakeMongoDB.prototype, 'indexes')
-				.returns();
-
-			sandbox.stub(ModelClient.prototype, 'get');
+			sandbox.stub(Model.prototype, 'getIndexes')
+				.returns([]);
 		});
 
 		const mongodbIndexCreator = new MongodbIndexCreator();
@@ -350,16 +358,13 @@ describe('MongodbIndexCreator', () => {
 				dbDatabase: 'some-db'
 			}]);
 
-			sandbox.assert.calledOnce(MongoClient.connect);
+			sandbox.assert.callCount(Model.prototype.getIndexes, 4);
 
-			sandbox.assert.calledOnce(FakeMongoDB.prototype.db);
-			sandbox.assert.calledWithExactly(FakeMongoDB.prototype.db, 'some-db');
-
-			sandbox.assert.calledTwice(FakeMongoDB.prototype.indexes);
-
-			sandbox.assert.calledTwice(FakeMongoDB.prototype.createIndex);
-			sandbox.assert.calledWithExactly(FakeMongoDB.prototype.createIndex.getCall(0), { myIndex: 1 }, { name: 'myIndex', unique: true });
-			sandbox.assert.calledWithExactly(FakeMongoDB.prototype.createIndex.getCall(1), { someIndex: 1 }, { name: 'someIndex' });
+			sandbox.assert.callCount(Model.prototype.createIndexes, 4);
+			sandbox.assert.calledWithExactly(Model.prototype.createIndexes.getCall(0), [{ name: 'myIndex', key: { myIndex: 1 }, unique: true }]);
+			sandbox.assert.calledWithExactly(Model.prototype.createIndexes.getCall(1), [{ name: 'myIndex', key: { myIndex: 1 }, unique: true }]);
+			sandbox.assert.calledWithExactly(Model.prototype.createIndexes.getCall(2), [{ name: 'someIndex', key: { someIndex: 1 } }]);
+			sandbox.assert.calledWithExactly(Model.prototype.createIndexes.getCall(3), [{ name: 'someIndex', key: { someIndex: 1 } }]);
 		});
 
 		it('Should create the mongodb indexes for client with different read and write databases', async () => {
@@ -388,23 +393,17 @@ describe('MongodbIndexCreator', () => {
 				dbReadDatabase: 'read-db'
 			}]);
 
-			sandbox.assert.calledTwice(MongoClient.connect);
+			sandbox.assert.callCount(Model.prototype.getIndexes, 4);
 
-			sandbox.assert.calledTwice(FakeMongoDB.prototype.db);
-			sandbox.assert.calledWithExactly(FakeMongoDB.prototype.db.getCall(0), 'other-db');
-			sandbox.assert.calledWithExactly(FakeMongoDB.prototype.db.getCall(1), 'read-db');
+			sandbox.assert.callCount(Model.prototype.createIndexes, 4);
 
-			sandbox.assert.callCount(FakeMongoDB.prototype.indexes, 4);
+			// write-db
+			sandbox.assert.calledWithExactly(Model.prototype.createIndexes.getCall(0), [{ name: 'myIndex', key: { myIndex: 1 }, unique: true }]);
+			sandbox.assert.calledWithExactly(Model.prototype.createIndexes.getCall(2), [{ name: 'someIndex', key: { someIndex: 1 } }]);
 
-			sandbox.assert.callCount(FakeMongoDB.prototype.createIndex, 4);
-
-			// For other-db
-			sandbox.assert.calledWithExactly(FakeMongoDB.prototype.createIndex.getCall(0), { myIndex: 1 }, { name: 'myIndex', unique: true });
-			sandbox.assert.calledWithExactly(FakeMongoDB.prototype.createIndex.getCall(1), { someIndex: 1 }, { name: 'someIndex' });
-
-			// For read-db
-			sandbox.assert.calledWithExactly(FakeMongoDB.prototype.createIndex.getCall(2), { myIndex: 1 }, { name: 'myIndex', unique: true });
-			sandbox.assert.calledWithExactly(FakeMongoDB.prototype.createIndex.getCall(3), { someIndex: 1 }, { name: 'someIndex' });
+			// read-db
+			sandbox.assert.calledWithExactly(Model.prototype.createIndexes.getCall(1), [{ name: 'myIndex', key: { myIndex: 1 }, unique: true }]);
+			sandbox.assert.calledWithExactly(Model.prototype.createIndexes.getCall(3), [{ name: 'someIndex', key: { someIndex: 1 } }]);
 		});
 
 		it('Should create the mongodb indexes only for the write database when receives a client with equal read and write databases', async () => {
@@ -433,70 +432,14 @@ describe('MongodbIndexCreator', () => {
 				dbReadDatabase: 'some-other-db'
 			}]);
 
-			sandbox.assert.calledOnce(MongoClient.connect);
+			sandbox.assert.callCount(Model.prototype.getIndexes, 4);
 
-			sandbox.assert.calledOnce(FakeMongoDB.prototype.db);
-			sandbox.assert.calledWithExactly(FakeMongoDB.prototype.db, 'some-other-db');
+			sandbox.assert.callCount(Model.prototype.createIndexes, 4);
 
-			sandbox.assert.calledTwice(FakeMongoDB.prototype.indexes);
-
-			sandbox.assert.calledTwice(FakeMongoDB.prototype.createIndex);
-			sandbox.assert.calledWithExactly(FakeMongoDB.prototype.createIndex.getCall(0), { myIndex: 1 }, { name: 'myIndex', unique: true });
-			sandbox.assert.calledWithExactly(FakeMongoDB.prototype.createIndex.getCall(1), { someIndex: 1 }, { name: 'someIndex' });
-		});
-
-		it('Should throw when can\'t connect to target MongoDB database', async () => {
-
-			setClientConfig({
-				write: {
-					dbHost: 'host',
-					dbDatabase: 'database'
-				}
-			});
-
-			setClientSchemas(fakeClientSchemas);
-
-			setDatabaseWriteType('mongodb');
-
-			MongoClient.connect
-				.throws();
-
-			await assert.rejects(mongodbIndexCreator.createClientIndexes([{
-				code: 'fake-client',
-				dbHost: 'fake-host',
-				dbDatabase: 'fake-client-db'
-			}]), {
-				name: 'MongodbIndexCreatorError',
-				code: MongodbIndexCreatorError.codes.MONGODB_CONNECTION_FAILED
-			});
-
-			sandbox.assert.calledOnce(MongoClient.connect);
-		});
-
-		it('Should throw when the client database type is not MongoDB', async () => {
-
-			setClientConfig({
-				write: {
-					dbHost: 'host',
-					dbDatabase: 'database'
-				}
-			});
-
-			setClientSchemas(fakeClientSchemas);
-
-			setDatabaseWriteType('mysql');
-
-			sandbox.stub(DatabaseDispatcher, '_getDBDriver')
-				.returns(new class MySQL {}());
-
-			await assert.rejects(mongodbIndexCreator.createClientIndexes([{
-				code: 'fake-client',
-				dbHost: 'fake-host',
-				dbDatabase: 'fake-db'
-			}]), {
-				name: 'MongodbIndexCreatorError',
-				code: MongodbIndexCreatorError.codes.INVALID_DATABASE_TYPE
-			});
+			sandbox.assert.calledWithExactly(Model.prototype.createIndexes.getCall(0), [{ name: 'myIndex', key: { myIndex: 1 }, unique: true }]);
+			sandbox.assert.calledWithExactly(Model.prototype.createIndexes.getCall(1), [{ name: 'myIndex', key: { myIndex: 1 }, unique: true }]);
+			sandbox.assert.calledWithExactly(Model.prototype.createIndexes.getCall(2), [{ name: 'someIndex', key: { someIndex: 1 } }]);
+			sandbox.assert.calledWithExactly(Model.prototype.createIndexes.getCall(3), [{ name: 'someIndex', key: { someIndex: 1 } }]);
 		});
 
 		describe('Schemas file errors', () => {
