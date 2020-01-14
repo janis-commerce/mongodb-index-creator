@@ -3,19 +3,21 @@
 const path = require('path');
 const sandbox = require('sinon').createSandbox();
 
+const Schemas = require('../lib/helpers/schemas');
+
 const MongodbIndexCreator = require('../lib/mongodb-index-creator');
 
-require('../lib/utils/colorful-lllog')('none');
+require('../lib/colorful-lllog')('none');
 
 describe('index', () => {
 
 	const setCoreSchemas = schemas => {
-		sandbox.stub(MongodbIndexCreator.prototype, 'coreSchemas')
+		sandbox.stub(Schemas.prototype, 'core')
 			.get(() => schemas);
 	};
 
 	const setClientSchemas = schemas => {
-		sandbox.stub(MongodbIndexCreator.prototype, 'clientSchemas')
+		sandbox.stub(Schemas.prototype, 'client')
 			.get(() => schemas);
 	};
 

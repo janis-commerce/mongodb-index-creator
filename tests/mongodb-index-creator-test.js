@@ -1,6 +1,5 @@
 'use strict';
 
-const path = require('path');
 const assert = require('assert');
 const sandbox = require('sinon').createSandbox();
 
@@ -10,10 +9,12 @@ const Settings = require('@janiscommerce/settings');
 
 const ModelClient = require('../lib/model-client');
 
+const Schemas = require('../lib/helpers/schemas');
+
 const MongodbIndexCreator = require('../lib/mongodb-index-creator');
 const MongodbIndexCreatorError = require('../lib/mongodb-index-creator-error');
 
-require('../lib/utils/colorful-lllog')('none');
+require('../lib/colorful-lllog')('none');
 
 describe('MongodbIndexCreator', () => {
 
@@ -26,12 +27,12 @@ describe('MongodbIndexCreator', () => {
 	};
 
 	const setCoreSchemas = schemas => {
-		sandbox.stub(MongodbIndexCreator.prototype, 'coreSchemas')
+		sandbox.stub(Schemas.prototype, 'core')
 			.get(() => schemas);
 	};
 
 	const setClientSchemas = schemas => {
-		sandbox.stub(MongodbIndexCreator.prototype, 'clientSchemas')
+		sandbox.stub(Schemas.prototype, 'client')
 			.get(() => schemas);
 	};
 
@@ -43,72 +44,6 @@ describe('MongodbIndexCreator', () => {
 
 	afterEach(() => {
 		sandbox.restore();
-	});
-
-	describe('constructor', () => {
-
-		it('Should use the default schemas path when no receives parameters', async () => {
-
-			const mongodbIndexCreator = new MongodbIndexCreator();
-			assert.deepEqual(mongodbIndexCreator.schemasPath, path.join(process.cwd(), 'schemas', 'mongo'));
-		});
-
-		it('Should use the specified schemas path when receives parameters', async () => {
-
-			const mongodbIndexCreator = new MongodbIndexCreator('some-path');
-			assert.deepEqual(mongodbIndexCreator.schemasPath, 'some-path');
-		});
-	});
-
-	describe('Getters', () => {
-
-		let requireStub;
-
-		beforeEach(() => {
-			requireStub = sandbox.stub(module.constructor, '_load');
-		});
-
-		const mongodbIndexCreator = new MongodbIndexCreator();
-
-		it('Should return the core schemas from schemas path', async () => {
-
-			requireStub.returns({ core: {} });
-
-			assert.deepStrictEqual(mongodbIndexCreator.coreSchemas, { core: {} });
-
-			sandbox.assert.calledOnce(requireStub);
-			sandbox.assert.calledWithMatch(requireStub, path.join(process.cwd(), 'schemas', 'mongo', 'core'));
-		});
-
-		it('Should return undefined when the core schemas file require fails', async () => {
-
-			requireStub.throws();
-
-			assert.deepStrictEqual(mongodbIndexCreator.coreSchemas, undefined);
-
-			sandbox.assert.calledOnce(requireStub);
-			sandbox.assert.calledWithMatch(requireStub, path.join(process.cwd(), 'schemas', 'mongo', 'core'));
-		});
-
-		it('Should return the clients schemas from schemas path', async () => {
-
-			requireStub.returns({ myCollection: [] });
-
-			assert.deepStrictEqual(mongodbIndexCreator.clientSchemas, { myCollection: [] });
-
-			sandbox.assert.calledOnce(requireStub);
-			sandbox.assert.calledWithMatch(requireStub, path.join(process.cwd(), 'schemas', 'mongo', 'clients'));
-		});
-
-		it('Should return undefined when the client schemas file require fails', async () => {
-
-			requireStub.throws();
-
-			assert.deepStrictEqual(mongodbIndexCreator.clientSchemas, undefined);
-
-			sandbox.assert.calledOnce(requireStub);
-			sandbox.assert.calledWithMatch(requireStub, path.join(process.cwd(), 'schemas', 'mongo', 'clients'));
-		});
 	});
 
 	describe('createCoreIndexes()', () => {

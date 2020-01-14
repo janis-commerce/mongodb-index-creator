@@ -2,7 +2,7 @@
 
 'use strict';
 
-const logger = require('./lib/utils/colorful-lllog')();
+const logger = require('./lib/colorful-lllog')();
 
 const MongodbIndexCreator = require('./lib/mongodb-index-creator');
 
