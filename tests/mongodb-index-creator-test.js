@@ -332,46 +332,10 @@ describe('MongodbIndexCreator', () => {
 
 			// write-db
 			sandbox.assert.calledWithExactly(Model.prototype.createIndexes.getCall(0), [{ name: 'myIndex', key: { myIndex: 1 }, unique: true }]);
-			sandbox.assert.calledWithExactly(Model.prototype.createIndexes.getCall(2), [{ name: 'someIndex', key: { someIndex: 1 } }]);
+			sandbox.assert.calledWithExactly(Model.prototype.createIndexes.getCall(1), [{ name: 'someIndex', key: { someIndex: 1 } }]);
 
 			// read-db
-			sandbox.assert.calledWithExactly(Model.prototype.createIndexes.getCall(1), [{ name: 'myIndex', key: { myIndex: 1 }, unique: true }]);
-			sandbox.assert.calledWithExactly(Model.prototype.createIndexes.getCall(3), [{ name: 'someIndex', key: { someIndex: 1 } }]);
-		});
-
-		it('Should create the mongodb indexes only for the write database when receives a client with equal read and write databases', async () => {
-
-			setClientConfig({
-				write: {
-					dbHost: 'host',
-					dbDatabase: 'database'
-				},
-				read: {
-					dbReadHost: 'host',
-					dbReadDatabase: 'database'
-				}
-			});
-
-			setClientSchemas(fakeClientSchemas);
-
-			setDatabaseWriteType('mongodb');
-			setDatabaseReadType('mongodb');
-
-			await mongodbIndexCreator.createClientIndexes([{
-				code: 'some-other-client',
-				dbHost: 'some-other-host',
-				dbDatabase: 'some-other-db',
-				dbReadHost: 'some-other-host',
-				dbReadDatabase: 'some-other-db'
-			}]);
-
-			sandbox.assert.callCount(Model.prototype.getIndexes, 4);
-
-			sandbox.assert.callCount(Model.prototype.createIndexes, 4);
-
-			sandbox.assert.calledWithExactly(Model.prototype.createIndexes.getCall(0), [{ name: 'myIndex', key: { myIndex: 1 }, unique: true }]);
-			sandbox.assert.calledWithExactly(Model.prototype.createIndexes.getCall(1), [{ name: 'myIndex', key: { myIndex: 1 }, unique: true }]);
-			sandbox.assert.calledWithExactly(Model.prototype.createIndexes.getCall(2), [{ name: 'someIndex', key: { someIndex: 1 } }]);
+			sandbox.assert.calledWithExactly(Model.prototype.createIndexes.getCall(2), [{ name: 'myIndex', key: { myIndex: 1 }, unique: true }]);
 			sandbox.assert.calledWithExactly(Model.prototype.createIndexes.getCall(3), [{ name: 'someIndex', key: { someIndex: 1 } }]);
 		});
 
