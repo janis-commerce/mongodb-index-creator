@@ -184,7 +184,6 @@ The codes are the following:
 | 1    | Invalid database type for received client or databaseKey config |
 | 2    | MongoDB connection failed                                       |
 | 3    | Invalid core schemas                                            |
-| 4    | Invalid client schemas                                          |
-| 5    | Invalid collections in client/core schemas                      |
-| 6    | Invalid collection indexes in client/core schemas               |
-| 7    | Model Client error                                              |
+| 4    | Invalid collections in client/core schemas                      |
+| 5    | Invalid collection indexes in client/core schemas               |
+| 6    | Model Client error                                              |

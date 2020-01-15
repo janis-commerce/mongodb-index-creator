@@ -26,14 +26,16 @@ describe('MongodbIndexCreator', () => {
 		port: 27017
 	};
 
+	let getSchemasStub;
+
 	const setCoreSchemas = schemas => {
-		sandbox.stub(Schemas.prototype, 'core')
-			.get(() => schemas);
+		getSchemasStub.withArgs('core')
+			.returns(schemas);
 	};
 
 	const setClientSchemas = schemas => {
-		sandbox.stub(Schemas.prototype, 'client')
-			.get(() => schemas);
+		getSchemasStub.withArgs('clients')
+			.returns(schemas);
 	};
 
 	const setDatabaseConfig = config => {
@@ -41,6 +43,10 @@ describe('MongodbIndexCreator', () => {
 			.withArgs('database')
 			.returns(config);
 	};
+
+	beforeEach(() => {
+		getSchemasStub = sandbox.stub(Schemas.prototype, '_getSchemas');
+	});
 
 	afterEach(() => {
 		sandbox.restore();
@@ -349,7 +355,7 @@ describe('MongodbIndexCreator', () => {
 
 					await assert.rejects(mongodbIndexCreator.createClientIndexes([]), {
 						name: 'MongodbIndexCreatorError',
-						code: MongodbIndexCreatorError.codes.INVALID_CLIENT_SCHEMAS
+						code: MongodbIndexCreatorError.codes.INVALID_COLLECTIONS
 					});
 				});
 			});
