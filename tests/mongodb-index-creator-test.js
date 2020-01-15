@@ -293,13 +293,11 @@ describe('MongodbIndexCreator', () => {
 				dbDatabase: 'some-db'
 			}]);
 
-			sandbox.assert.callCount(Model.prototype.getIndexes, 4);
+			sandbox.assert.calledTwice(Model.prototype.getIndexes);
 
-			sandbox.assert.callCount(Model.prototype.createIndexes, 4);
+			sandbox.assert.calledTwice(Model.prototype.createIndexes);
 			sandbox.assert.calledWithExactly(Model.prototype.createIndexes.getCall(0), [{ name: 'myIndex', key: { myIndex: 1 }, unique: true }]);
-			sandbox.assert.calledWithExactly(Model.prototype.createIndexes.getCall(1), [{ name: 'myIndex', key: { myIndex: 1 }, unique: true }]);
-			sandbox.assert.calledWithExactly(Model.prototype.createIndexes.getCall(2), [{ name: 'someIndex', key: { someIndex: 1 } }]);
-			sandbox.assert.calledWithExactly(Model.prototype.createIndexes.getCall(3), [{ name: 'someIndex', key: { someIndex: 1 } }]);
+			sandbox.assert.calledWithExactly(Model.prototype.createIndexes.getCall(1), [{ name: 'someIndex', key: { someIndex: 1 } }]);
 		});
 
 		it('Should create the mongodb indexes for client with different read and write databases', async () => {
