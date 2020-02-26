@@ -275,7 +275,7 @@ describe('MongodbIndexCreator', () => {
 				.returns(true);
 
 			sandbox.stub(Model.prototype, 'getIndexes')
-				.returns([]);
+				.rejects();
 		});
 
 		const mongodbIndexCreator = new MongodbIndexCreator();

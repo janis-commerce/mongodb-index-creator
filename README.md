@@ -171,7 +171,7 @@ const mongodbIndexCreator = new MongodbIndexCreator();
 ```
 
 ## Notes
-- **If the schemas files contains indexes for collections that not exists in the target database, the process will fail.**
+- **If the schemas files contains indexes for databases and/or collections that not exists, they will be created in the process.**
 
 ## Errors
 
