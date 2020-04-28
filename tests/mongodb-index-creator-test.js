@@ -13,6 +13,7 @@ const Schemas = require('../lib/helpers/schemas');
 
 const MongodbIndexCreator = require('../lib/mongodb-index-creator');
 const MongodbIndexCreatorError = require('../lib/mongodb-index-creator-error');
+const serverlessFunction = require('../lib/serverless-function.json');
 
 require('../lib/colorful-lllog')('none');
 
@@ -360,7 +361,19 @@ describe('MongodbIndexCreator', () => {
 				});
 			});
 
-			[null, undefined, 'string', 1, { some: 'object' }].forEach(indexes => {
+			[
+				null,
+				undefined,
+				'string',
+				1,
+				{ some: 'object' },
+				{
+					name: 'myIndex',
+					key: { myIndex: 1 },
+					unique: true,
+					expireAfterSeconds: 'not-a-number'
+				}
+			].forEach(indexes => {
 
 				it('Should throw when the indexes from the received client schemas is not an array or not exists', async () => {
 
@@ -581,6 +594,13 @@ describe('MongodbIndexCreator', () => {
 			sandbox.assert.calledOnce(MongodbIndexCreator.prototype.executeForCoreDatabases);
 
 			sandbox.assert.calledOnce(MongodbIndexCreator.prototype.executeForClientDatabases);
+		});
+	});
+
+	describe('get serverlessFunction', () => {
+
+		it('Should return the serverless function', () => {
+			assert.deepStrictEqual(MongodbIndexCreator.serverlessFunction, serverlessFunction);
 		});
 	});
 });

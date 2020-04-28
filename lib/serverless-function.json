@@ -1,0 +1,7 @@
+["function", {
+	"functionName": "MongoDBIndexCreator",
+	"handler": "src/lambda/MongoDBIndexCreator/index.handler",
+	"description": "MongoDB Indexes Creation Lambda",
+	"timeout": 60,
+	"package": { "include": ["schemas/mongo/**"] }
+}]
