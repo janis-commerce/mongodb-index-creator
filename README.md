@@ -152,6 +152,10 @@ Creates the indexes for the specified client by `clientCode` using the schemas f
 
 Creates the indexes for core and clients databases using the schemas files located in the `schemasPath`.
 
+### **`async get serverlessFunction`**
+Returns a an array that contains the serverless function that can be use at the service `serverless.js` file.
+
+
 ## Examples
 
 ```js
