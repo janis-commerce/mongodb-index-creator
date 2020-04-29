@@ -44,7 +44,7 @@ This file is an `[Object]` export with the following structure:
 		- name (required): A `[String]` with the internal name of the MongoDB index
 		- key (required): An `[Object]` with the field and the index type for that field, for an ascending index use `1` or `-1` for a descending index
 		- unique (optional): `[Boolean]` Specify if the index will be unique
-		- expireAfterSeconds (optional): `[Number]` indicates which documents remove from a collection after a certain amount of time or at a specific clock time
+		- expireAfterSeconds (optional): `[Number]` indicates which documents remove from a collection after a certain amount of time or at a specific clock time.
 
 ### Running the utility
 ```sh
@@ -71,7 +71,7 @@ module.exports = {
 		'other-collection': [
 			{
 				name: 'indicates-expiration'
-				key: { modificationDate: 1 },
+				key: { modificationDateIndex: 1 },
 				expireAfterSeconds: 3600
 			}
 		]
@@ -110,7 +110,7 @@ module.exports = {
 	'other-collection': [
 		{
 			name: 'indicates-expiration'
-			key: { modificationDate: 1 },
+			key: { modificationDateIndex: 1 },
 			expireAfterSeconds: 3600
 		}
 	]

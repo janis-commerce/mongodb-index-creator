@@ -203,7 +203,19 @@ describe('MongodbIndexCreator', () => {
 				});
 			});
 
-			[null, undefined, 'string', 1, { some: 'object' }, { key: { someIndex: 1 } }].forEach(indexes => {
+			[
+				null,
+				undefined,
+				'string',
+				1,
+				{ some: 'object' },
+				{ key: { someIndex: 1 } },
+				{
+					name: 'myIndex',
+					key: { myIndex: 1 },
+					unique: true,
+					expireAfterSeconds: 'not-a-number'
+				}].forEach(indexes => {
 
 				it('Should throw when the indexes from the received databaseKeys is not an array or not exists', async () => {
 
