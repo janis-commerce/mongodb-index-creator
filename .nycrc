@@ -5,7 +5,7 @@
     "mocks/",
     ".eslintrc.js",
     ".travis.yml",
-    "serverless-function.yml"
+    "serverless-function.js"
   ],
   "extension": [
     ".js"
