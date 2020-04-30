@@ -13,7 +13,7 @@ const Schemas = require('../lib/helpers/schemas');
 
 const MongodbIndexCreator = require('../lib/mongodb-index-creator');
 const MongodbIndexCreatorError = require('../lib/mongodb-index-creator-error');
-const serverlessFunction = require('../lib/serverless-function.json');
+const serverlessFunction = require('../lib/serverless-function');
 
 require('../lib/colorful-lllog')('none');
 
