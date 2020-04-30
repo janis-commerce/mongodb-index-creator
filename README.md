@@ -35,7 +35,7 @@ This file is an `[Object]` export with the following structure:
 			- name (required): A `[String]` with the internal name of the MongoDB index
 			- key (required): An `[Object]` with the field and the index type for that field, for an ascending index use `1` or `-1` for a descending index
 			- unique (optional): `[Boolean]` Specify if the index will be unique
-			- expireAfterSeconds (optional): `[Number]` indicates which documents remove from a collection after a certain amount of time or at a specific clock time
+			- expireAfterSeconds (optional): `[Number]` Indicates which documents remove from a collection after a certain amount of time or at a specific clock time
 
 #### Clients schemas file
 This file is an `[Object]` export with the following structure:
@@ -44,7 +44,7 @@ This file is an `[Object]` export with the following structure:
 		- name (required): A `[String]` with the internal name of the MongoDB index
 		- key (required): An `[Object]` with the field and the index type for that field, for an ascending index use `1` or `-1` for a descending index
 		- unique (optional): `[Boolean]` Specify if the index will be unique
-		- expireAfterSeconds (optional): `[Number]` indicates which documents remove from a collection after a certain amount of time or at a specific clock time.
+		- expireAfterSeconds (optional): `[Number]` Indicates which documents remove from a collection after a certain amount of time or at a specific clock time.
 
 ### Running the utility
 ```sh
@@ -70,7 +70,7 @@ module.exports = {
 
 		'other-collection': [
 			{
-				name: 'indicates-expiration'
+				name: 'indicates-expiration',
 				key: { modificationDateIndex: 1 },
 				expireAfterSeconds: 3600
 			}
@@ -109,7 +109,7 @@ module.exports = {
 
 	'other-collection': [
 		{
-			name: 'indicates-expiration'
+			name: 'indicates-expiration',
 			key: { modificationDateIndex: 1 },
 			expireAfterSeconds: 3600
 		}
@@ -191,6 +191,31 @@ const mongodbIndexCreator = new MongodbIndexCreator();
 
 })();
 ```
+
+At a serverless.js file:
+```js
+'use strict';
+
+const { helper } = require('sls-helper'); // eslint-disable-line
+const functions = require('./serverless/functions.json');
+const { MongodbIndexCreator } =  require('@janiscommerce/mongodb-index-creator');
+
+
+module.exports = helper({
+	hooks: [
+		// other hooks
+        ...functions,
+        ...MongodbIndexCreator.serverlessFunction
+	]
+}, {
+	package: {
+		include: [
+			// your packages
+		]
+	}
+});
+```
+
 
 ## Notes
 - **If the schemas files contains indexes for databases and/or collections that not exists, they will be created in the process.**
