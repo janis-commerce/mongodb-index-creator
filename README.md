@@ -207,12 +207,6 @@ module.exports = helper({
         ...functions,
         ...MongodbIndexCreator.serverlessFunction
 	]
-}, {
-	package: {
-		include: [
-			// your packages
-		]
-	}
 });
 ```
 
