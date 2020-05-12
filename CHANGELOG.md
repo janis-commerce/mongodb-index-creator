@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [1.2.1] - 2020-05-12
+### Fixed
+- Serverless function - Added client model in `package.include`
+
 ## [1.2.0] - 2020-05-08
 ### Added
 - Serverless function getter
