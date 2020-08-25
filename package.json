@@ -26,6 +26,7 @@
     "eslint-plugin-import": "^2.19.1",
     "husky": "^2.4.1",
     "mocha": "^5.2.0",
+    "mock-fs": "^4.13.0",
     "mock-require": "^3.0.3",
     "mongodb": "^3.4.0",
     "nyc": "^15.1.0",
