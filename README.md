@@ -4,158 +4,95 @@
 [![Coverage Status](https://coveralls.io/repos/github/janis-commerce/mongodb-index-creator/badge.svg?branch=master)](https://coveralls.io/github/janis-commerce/mongodb-index-creator?branch=master)
 [![npm version](https://badge.fury.io/js/%40janiscommerce%2Fmongodb-index-creator.svg)](https://www.npmjs.com/package/@janiscommerce/mongodb-index-creator)
 
-A package to create MongoDB indexes for core and client databases
+A package to create MongoDB Indexes for databases collections
 
 ## Installation
 ```sh
 npm install @janiscommerce/mongodb-index-creator
 ```
 
+## Big Changes in _2.0.0_
+- Now we use `@janiscommerce/model@^5.x.x` with all the new features of that magic package.
+- Now the index are located in each Model and are obtained with the `indexes` static _getter_.
+- Now it's possible to drop all the indexes removing the `indexes` static _getter_.
+
 ## Configuration
-This package uses a configuration file located in `/path/to/root/{MS_PATH}/config/.janiscommercerc.json` to get the core and client database connection config.  
-If you need more information about how to set the database configs, please check the following docs: [@janiscommerce/model](https://www.npmjs.com/package/@janiscommerce/model)
+This package uses models for mantain indexes, creating or dropping if needs.
 
-## Usage (command line)
+If you need more information about how to configure a model, please check the following docs: [@janiscommerce/model](https://www.npmjs.com/package/@janiscommerce/model)
 
-This package will get the schemas files from the source directory: `/path/to/root/schemas/mongo`, also will read the database settings
-for core and client databases using the config file located in `/path/to/root/{MS_PATH}/config/.janiscommercerc.json`.
+### Model
+In every model we need to add a static `indexes` _getter_ to provide the indexes for that model (that will apply for the collection associated to the model).
 
-### Schemas files
-In order to create the MongoDB indexes this utility will read schemas files content, if any of these files not exists will be ignored, but if exists shouldn't be empty, must have at least the required structure, otherwise the utility will throw an error.
+```js
 
-The schemas path should contain the following files:
+'use strict';
 
-- `core.js`: This file contains the schemas for core databases (databaseKey models).
-- `clients.js`: This file contains the schemas for client databases (session models).
+const Model = require('@janiscommerce/model');
 
-#### Core schemas file
-This file is an `[Object]` export with the following structure:
-- databaseKey (required): A `[String]` with the database key for the database where the indexes will be created
-	- collections (required): An `[Object array]` with each prefix properties that will be created
-		- prefix (required): An `[Object]` with the prefix properties
-			- name (required): A `[String]` with the internal name of the MongoDB index
-			- key (required): An `[Object]` with the field and the index type for that field, for an ascending index use `1` or `-1` for a descending index
-			- unique (optional): `[Boolean]` Specify if the index will be unique
-			- expireAfterSeconds (optional): `[Number]` Indicates which documents remove from a collection after a certain amount of time or at a specific clock time
+module.exports = class Pet extends Model {
 
-#### Clients schemas file
-This file is an `[Object]` export with the following structure:
-- collections (required): An `[Object array]` with each prefix properties that will be created
-	- prefix (required): An `[Object]` with the prefix properties
-		- name (required): A `[String]` with the internal name of the MongoDB index
-		- key (required): An `[Object]` with the field and the index type for that field, for an ascending index use `1` or `-1` for a descending index
-		- unique (optional): `[Boolean]` Specify if the index will be unique
-		- expireAfterSeconds (optional): `[Number]` Indicates which documents remove from a collection after a certain amount of time or at a specific clock time.
+	static get table() {
+		return 'pets';
+	}
 
-### Running the utility
+	static get indexes() {
+		return [{
+			name: 'code',
+			key: { code: 1 },
+			unique: true
+		}];
+	}
+};
+
+```
+
+### Index Struct
+Each Index object in the `indexes` _getter_ will be validated according the following struct
+
+```yaml
+name: 'string'
+key: 'object'
+unique: 'boolean?' # optional
+expireAfterSeconds: 'number?' # optional
+```
+
+For more information see [MongoDB Indexes](https://docs.mongodb.com/manual/indexes/)
+
+## Running the utility
+
+Is possible to run the package using npx or as module using the API public methods.
+
+### Usage without installation
 ```sh
 npx @janiscommerce/mongodb-index-creator
 ```
 
-## Examples
-
-### Core schemas file example
-```js
-'use strict';
-
-module.exports = {
-
-	core: {
-		'my-collection': [
-			{
-				name: 'my-indexes',
-				key: { myIndex: 1 },
-				unique: true
-			}
-		], 
-
-		'other-collection': [
-			{
-				name: 'indicates-expiration',
-				key: { modificationDateIndex: 1 },
-				expireAfterSeconds: 3600
-			}
-		]
-	},
-
-	'other-database': {
-		'some-collection': [
-			{
-				key: { someIndex: 1 }
-			}
-		]
-	}
-}
-```
-
-### Client schemas file example
-```js
-'use strict';
-
-module.exports = {
-	
-	'my-collection': [
-		{
-			name: 'my-indexes',
-			key: { myIndex: 1 },
-			unique: true
-		}
-	],	
-
-	'some-collection': [
-		{
-			key: { someIndex: 1 }
-		}
-	],
-
-	'other-collection': [
-		{
-			name: 'indicates-expiration',
-			key: { modificationDateIndex: 1 },
-			expireAfterSeconds: 3600
-		}
-	]
-}
-```
-
-## Usage (as module)
+### Usage (as module)
 ```js
 const MongodbIndexCreator = require('@janiscommerce/mongodb-index-creator');
 ```
 
 ## API
 
-### **`new mongodbIndexCreator(schemasPath)`**
+### **`new mongodbIndexCreator()`**
 
-Constructs the MongodbIndexCreator instance, configuring the `schemasPath [String]`.
-
-### **`async createCoreIndexes()`**
-
-Creates the indexes for the specified databaseKeys and collections in the core schemas file.
-
-### **`async createClientIndexes(clients)`**
-
-Creates the indexes for each client in `clients [Object array]` using the client schemas file.
-
-### **`async executeForCoreDatabases()`**
-
-Creates the indexes for core databases using the schemas files located in the `schemasPath`.
-
-### **`async executeForClientDatabases()`**
-
-Creates the indexes for client databases using the schemas files located in the `schemasPath`.
-
-### **`async executeForClientCode(clientCode)`**
-
-Creates the indexes for the specified client by `clientCode` using the schemas files located in the `schemasPath`.
+Constructs the MongodbIndexCreator instance.
 
 ### **`async execute()`**
 
-Creates the indexes for core and clients databases using the schemas files located in the `schemasPath`.
+Run the utility for all models found in the models path.
+
+### **`async executeForClientDatabases()`**
+
+Run the utility for client models found in the models path.
+
+### **`async executeForClientCode(clientCode)`**
+
+Run the utility for client models found in the models path, but only for the client provided.
 
 ### **`async get serverlessFunction`**
-Returns a an array that contains the serverless function that can be use at the service `serverless.js` file.
-
+Returns an array that contains the serverless function that can be use at the service `serverless.js` file.
 
 ## Examples
 
@@ -166,29 +103,14 @@ const mongodbIndexCreator = new MongodbIndexCreator();
 
 (async () => {
 
-	// create the indexes for core databases (without logger messages)
-	await mongodbIndexCreator.createCoreIndexes();
-
-	// create the indexes for client databases (without logger messages)
-	await mongodbIndexCreator.createClientIndexes([
-		{
-			name: 'some-client',
-			code: 'some-client'
-			// client object...
-		}
-	]);
-
-	// execute for core databases
-	await mongodbIndexCreator.executeForCoreDatabases();
+	// execute for core and client databases
+	await mongodbIndexCreator.execute();
 
 	// execute for client databases
 	await mongodbIndexCreator.executeForClientDatabases();
 
 	// execute for specified client
 	await mongodbIndexCreator.executeForClientCode('some-client');
-
-	// execute for core and client databases
-	await mongodbIndexCreator.execute();
 
 })();
 ```
@@ -198,22 +120,15 @@ At a serverless.js file:
 'use strict';
 
 const { helper } = require('sls-helper'); // eslint-disable-line
-const functions = require('./serverless/functions.json');
 const { MongodbIndexCreator } =  require('@janiscommerce/mongodb-index-creator');
-
 
 module.exports = helper({
 	hooks: [
 		// other hooks
-        ...functions,
-        ...MongodbIndexCreator.serverlessFunction
+		...MongodbIndexCreator.serverlessFunction
 	]
 });
 ```
-
-
-## Notes
-- **If the schemas files contains indexes for databases and/or collections that not exists, they will be created in the process.**
 
 ## Errors
 
@@ -221,11 +136,6 @@ The errors are informed with a `MongoDbIndexCreatorError`.
 This object has a code that can be useful for a correct error handling.
 The codes are the following:
 
-| Code | Description                                                     |
-|------|-----------------------------------------------------------------|
-| 1    | Invalid database type for received client or databaseKey config |
-| 2    | MongoDB connection failed                                       |
-| 3    | Invalid core schemas                                            |
-| 4    | Invalid collections in client/core schemas                      |
-| 5    | Invalid collection indexes in client/core schemas               |
-| 6    | Model Client error                                              |
+| Code | Description                           |
+|------|---------------------------------------|
+| 1    | Invalid collection indexes in a model |

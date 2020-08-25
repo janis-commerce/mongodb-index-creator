@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.0.0] - 2020-08-25
+### Changed
+- Upgraded `@janiscommerce/model` dependency to `^5.0.0`
+- Using models `indexes` getter instead of schema files
+- Improved `Results` that now gives more detailed summary
+- Big refactor to simplify tests and usability
+
+### Removed
+- Schemas from files `core.js` and `client.js`
+- `package-lock.json`
+
 ## [1.2.1] - 2020-05-12
 ### Fixed
 - Serverless function - Added client model in `package.include`
