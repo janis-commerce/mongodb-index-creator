@@ -7,7 +7,7 @@ const Model = require('@janiscommerce/model');
 
 const Settings = require('@janiscommerce/settings');
 
-const ModelClient = require('../lib/model-client');
+// const ModelClient = require('../lib/model-client');
 
 const Schemas = require('../lib/helpers/schemas');
 

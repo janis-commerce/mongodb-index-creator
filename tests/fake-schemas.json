@@ -1,0 +1,10 @@
+{
+	"core": {
+		"collection": [
+			{
+				"name": "myIndex",
+				"key": { "myIndex": 1 }
+			}
+		]
+	}
+}

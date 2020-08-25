@@ -1,11 +1,7 @@
 {
-  "exclude": [
-    "coverages/",
-    "tests/",
-    "mocks/",
-    ".eslintrc.js",
-    ".travis.yml",
-    "serverless-function.js"
+  "include": [
+    "lib/",
+    "index.js"
   ],
   "extension": [
     ".js"
