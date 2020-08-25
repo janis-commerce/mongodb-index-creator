@@ -1,27 +1,17 @@
 'use strict';
 
+const assert = require('assert');
+
 const path = require('path');
 const sandbox = require('sinon').createSandbox();
 
-// const Schemas = require('../lib/helpers/schemas');
-
 const MongodbIndexCreator = require('../lib/mongodb-index-creator');
+
+const serverlessFunction = require('../lib/serverless-function');
 
 require('../lib/colorful-lllog')('none');
 
-
-describe.skip('index', () => {
-
-
-	const setCoreSchemas = schemas => {
-		sandbox.stub(Schemas.prototype, 'core')
-			.get(() => schemas);
-	};
-
-	const setClientSchemas = schemas => {
-		sandbox.stub(Schemas.prototype, 'client')
-			.get(() => schemas);
-	};
+describe('index', () => {
 
 	beforeEach(() => {
 		sandbox.stub(process, 'exit').returns();
@@ -32,38 +22,34 @@ describe.skip('index', () => {
 		delete require.cache[path.join(process.cwd(), 'index.js')]; // clear require cache
 	});
 
-	it('Should run the index script and execute method for core and client databases', async () => {
-
-		setCoreSchemas({});
-
-		setClientSchemas({});
-
-		sandbox.stub(MongodbIndexCreator.prototype, 'executeForCoreDatabases')
-			.returns();
-
-		sandbox.stub(MongodbIndexCreator.prototype, 'executeForClientDatabases')
-			.returns();
-
+	const test = async () => {
 		const index = require('../index'); // eslint-disable-line global-require, no-unused-vars
 
 		await index;
 
-		sandbox.assert.calledOnce(MongodbIndexCreator.prototype.executeForCoreDatabases);
+		sandbox.assert.calledOnce(MongodbIndexCreator.prototype.execute);
+	};
 
-		sandbox.assert.calledOnce(MongodbIndexCreator.prototype.executeForClientDatabases);
+	it('Should run the index script and execute method for core and client databases', async () => {
+
+		sandbox.stub(MongodbIndexCreator.prototype, 'execute')
+			.returns();
+
+		await test();
 	});
 
 	it('Should run the index script and execute method for core and client databases (process fails)', async () => {
 
-		setCoreSchemas({});
-
-		sandbox.stub(MongodbIndexCreator.prototype, 'executeForCoreDatabases')
+		sandbox.stub(MongodbIndexCreator.prototype, 'execute')
 			.rejects();
 
-		const index = require('../index'); // eslint-disable-line global-require, no-unused-vars
+		await test();
+	});
+});
 
-		await index;
+describe('get serverlessFunction', () => {
 
-		sandbox.assert.calledOnce(MongodbIndexCreator.prototype.executeForCoreDatabases);
+	it('Should return the serverless function', () => {
+		assert.deepStrictEqual(MongodbIndexCreator.serverlessFunction, serverlessFunction);
 	});
 });
