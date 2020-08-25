@@ -1,9 +1,17 @@
 {
 	"core": {
-		"collection": [
+		"foo": [
 			{
-				"name": "myIndex",
-				"key": { "myIndex": 1 }
+				"name": "foo",
+				"key": { "foo": 1 }
+			}
+		]
+	},
+	"default": {
+		"bar": [
+			{
+				"name": "bar",
+				"key": { "bar": 1 }
 			}
 		]
 	}

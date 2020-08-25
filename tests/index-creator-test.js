@@ -1,9 +1,7 @@
 'use strict';
 
-const assert = require('assert');
 const sandbox = require('sinon').createSandbox();
 const mockRequire = require('mock-require');
-const path = require('path');
 
 const Model = require('@janiscommerce/model');
 
@@ -13,23 +11,49 @@ require('../lib/colorful-lllog')('none');
 
 const MongodbIndexCreator = require('../lib/mongodb-index-creator');
 
-const fakeClientPath = path.join(process.cwd(), process.env.MS_PATH || '', 'models', 'client');
-const fakeSchemasPath = path.join(process.cwd(), 'schemas', 'mongodb', 'indexes');
+const { Schemas, Client } = require('../lib/helpers');
 
 describe.only('MongodbIndexCreator', () => {
 
 	const ModelClient = class ModelClient extends Model {};
 
-	mockRequire(fakeClientPath, ModelClient);
-	mockRequire(fakeSchemasPath, fakeSchemas);
+	mockRequire(Client.getRelativePath(), ModelClient);
+	mockRequire(Schemas.schemasPath, fakeSchemas);
 
 	it('something', async () => {
 
 		const mongodbIndexCreator = new MongodbIndexCreator();
 
-		sandbox.stub(ModelClient.prototype, 'get').returns([
-			{ name: 'foo' }
+		sandbox.stub(ModelClient.prototype, 'get').resolves([
+			{ name: 'client-a', databases: { default: { write: {} } } }
 		]);
+
+		sandbox.stub(ModelClient.prototype, 'getIndexes').resolves([
+			{
+				name: '_id_',
+				key: { _id: 1 },
+				unique: true
+			},
+			{
+				name: 'bar',
+				key: { bar: 1 }
+			}
+		]);
+
+		sandbox.stub(Model.prototype, 'getIndexes').resolves([
+			{
+				name: '_id_',
+				key: { _id: 1 },
+				unique: true
+			},
+			{
+				name: 'foo',
+				key: { foo: 1 }
+			}
+		]);
+
+		sandbox.stub(Model.prototype, 'dropIndexes').resolves(true);
+		sandbox.stub(Model.prototype, 'createIndexes').resolves(true);
 
 		mongodbIndexCreator.execute();
 	});
