@@ -150,6 +150,9 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 				.resolves([defaultIndex, {
 					name: 'oldIndex',
 					key: { oldIndex: 1 }
+				}, {
+					name: 'veryOldIndex',
+					key: { veryOldIndex: 1 }
 				}]);
 
 			sandbox.stub(SimpleModel.prototype, 'dropIndexes')
@@ -160,7 +163,7 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 
 			await execute();
 
-			sandbox.assert.calledOnceWithExactly(SimpleModel.prototype.dropIndexes, ['oldIndex']);
+			sandbox.assert.calledOnceWithExactly(SimpleModel.prototype.dropIndexes, ['oldIndex', 'veryOldIndex']);
 
 			sandbox.assert.calledOnceWithExactly(SimpleModel.prototype.createIndexes, [{
 				name: 'field',
@@ -169,8 +172,8 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 
 			assert.deepStrictEqual(Results.results, {
 				[`${SimpleModel.prototype.databaseKey}.${SimpleModel.table}`]: {
-					dropped: 1,
-					created: 1
+					dropped: ['oldIndex', 'veryOldIndex'],
+					created: ['field']
 				}
 			});
 		});
@@ -205,8 +208,8 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 
 			assert.deepStrictEqual(Results.results, {
 				[`${SimpleModel.prototype.databaseKey}.${SimpleModel.table}`]: {
-					dropFailed: 1,
-					createFailed: 1
+					dropFailed: ['oldIndex'],
+					createFailed: ['field']
 				}
 			});
 		});
