@@ -39,6 +39,7 @@
     "test": "tests"
   },
   "dependencies": {
+    "@janiscommerce/api-session": "^2.0.0",
     "@janiscommerce/model": "^5.0.0",
     "lllog": "^1.1.2",
     "superstruct": "0.6.1"

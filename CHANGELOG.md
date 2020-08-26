@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
-## [2.0.0] - 2020-08-25
+## [2.0.1] - 2020-08-26
+### Fixed
+- Added ApiSession for client models
+
+## [2.0.0] - 2020-08-26
 ### Changed
 - Upgraded `@janiscommerce/model` dependency to `^5.0.0`
 - Using models `indexes` getter instead of schema files
