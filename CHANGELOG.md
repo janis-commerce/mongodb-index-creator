@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.1.2] - 2020-08-27
+### Changed
+- Updated `@janiscommerce/api-session` to `3.x.x`
+
 ## [2.1.1] - 2020-08-26
 ### Fixed
 - Fix error message when invalid index
