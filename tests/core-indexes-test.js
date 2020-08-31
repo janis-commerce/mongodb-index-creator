@@ -242,6 +242,40 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 			});
 		});
 
+		context('when createIndexes fails', () => {
+			it('should log the result and continue without rejecting', async () => {
+
+				sandbox.stub(fs, 'readdirSync')
+					.returns(['simple.js']);
+
+				mockRequire(path.join(Models.path, 'simple.js'), SimpleModel);
+
+				sandbox.stub(SimpleModel.prototype, 'getIndexes')
+					.resolves([defaultIndex]);
+
+				sandbox.stub(SimpleModel.prototype, 'dropIndexes')
+					.resolves(true);
+
+				sandbox.stub(SimpleModel.prototype, 'createIndexes')
+					.rejects('Some error');
+
+				await execute();
+
+				sandbox.assert.notCalled(SimpleModel.prototype.dropIndexes);
+
+				sandbox.assert.calledOnceWithExactly(SimpleModel.prototype.createIndexes, [{
+					name: 'field',
+					key: { field: 1 }
+				}]);
+
+				assert.deepStrictEqual(Results.results, {
+					[`${SimpleModel.prototype.databaseKey}.${SimpleModel.table}`]: {
+						collectionFailed: ['field']
+					}
+				});
+			});
+		});
+
 	});
 
 	context('when invalid index found', () => {
