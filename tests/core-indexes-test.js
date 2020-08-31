@@ -171,7 +171,7 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 			}]);
 
 			assert.deepStrictEqual(Results.results, {
-				[`${SimpleModel.prototype.databaseKey}.${SimpleModel.table}`]: {
+				[`${SimpleModel.prototype.databaseKey}.write.${SimpleModel.table}`]: {
 					dropped: ['oldIndex', 'veryOldIndex'],
 					created: ['field']
 				}
@@ -207,7 +207,7 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 			}]);
 
 			assert.deepStrictEqual(Results.results, {
-				[`${SimpleModel.prototype.databaseKey}.${SimpleModel.table}`]: {
+				[`${SimpleModel.prototype.databaseKey}.write.${SimpleModel.table}`]: {
 					dropFailed: ['oldIndex'],
 					createFailed: ['field']
 				}
@@ -269,8 +269,46 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 				}]);
 
 				assert.deepStrictEqual(Results.results, {
-					[`${SimpleModel.prototype.databaseKey}.${SimpleModel.table}`]: {
+					[`${SimpleModel.prototype.databaseKey}.write.${SimpleModel.table}`]: {
 						collectionFailed: ['field']
+					}
+				});
+			});
+		});
+
+		context('when dropIndexes fails', () => {
+			it('should log the result and continue without rejecting', async () => {
+
+				sandbox.stub(fs, 'readdirSync')
+					.returns(['simple.js']);
+
+				mockRequire(path.join(Models.path, 'simple.js'), SimpleModel);
+
+				sandbox.stub(SimpleModel.prototype, 'getIndexes')
+					.resolves([defaultIndex, {
+						name: 'otherField',
+						key: { otherField: 1 }
+					}]);
+
+				sandbox.stub(SimpleModel.prototype, 'dropIndexes')
+					.rejects('Some error');
+
+				sandbox.stub(SimpleModel.prototype, 'createIndexes')
+					.resolves(true);
+
+				await execute();
+
+				sandbox.assert.calledOnceWithExactly(SimpleModel.prototype.dropIndexes, ['otherField']);
+
+				sandbox.assert.calledOnceWithExactly(SimpleModel.prototype.createIndexes, [{
+					name: 'field',
+					key: { field: 1 }
+				}]);
+
+				assert.deepStrictEqual(Results.results, {
+					[`${SimpleModel.prototype.databaseKey}.write.${SimpleModel.table}`]: {
+						collectionFailed: ['otherField'],
+						created: ['field']
 					}
 				});
 			});

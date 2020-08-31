@@ -1,5 +1,7 @@
 'use strict';
 
+const assert = require('assert');
+
 const sandbox = require('sinon').createSandbox();
 const mockRequire = require('mock-require');
 const path = require('path');
@@ -116,7 +118,7 @@ describe('MongodbIndexCreator - Client Indexes', () => {
 			sandbox.assert.notCalled(SimpleModel.prototype.createIndexes);
 		});
 
-		it('should create a client index', async () => {
+		it('should create a client index and save results', async () => {
 
 			loadClient();
 
@@ -142,6 +144,12 @@ describe('MongodbIndexCreator - Client Indexes', () => {
 				name: 'field',
 				key: { field: 1 }
 			}]);
+
+			assert.deepStrictEqual(Results.results, {
+				[`the-client-code.${SimpleModel.prototype.databaseKey}.write.${SimpleModel.table}`]: {
+					created: ['field']
+				}
+			});
 		});
 
 		it('should drop a client index', async () => {
@@ -305,12 +313,21 @@ describe('MongodbIndexCreator - Client Indexes', () => {
 
 				await execute();
 
+				// se dropea para la base read
 				sandbox.assert.calledOnceWithExactly(SimpleReadModel.prototype.dropIndexes, ['wrongField']);
 
+				// se crea para la base read
 				sandbox.assert.calledOnceWithExactly(SimpleReadModel.prototype.createIndexes, [{
 					name: 'field',
 					key: { field: 1 }
 				}]);
+
+				assert.deepStrictEqual(Results.results, {
+					[`the-client-code.${SimpleReadModel.prototype.databaseKey}.read.${SimpleReadModel.table}`]: {
+						created: ['field'],
+						dropped: ['wrongField']
+					}
+				});
 			});
 		});
 
@@ -321,7 +338,8 @@ describe('MongodbIndexCreator - Client Indexes', () => {
 
 			mockRequire(Client.getRelativePath(), ClientModel);
 
-			sandbox.stub(ClientModel.prototype, 'get').resolves([]);
+			sandbox.stub(ClientModel.prototype, 'get')
+				.resolves([]);
 
 			sandbox.stub(fs, 'readdirSync')
 				.returns(['simple.js']);
@@ -333,6 +351,31 @@ describe('MongodbIndexCreator - Client Indexes', () => {
 			sandbox.stub(SimpleModel.prototype, 'createIndexes');
 
 			await executeForCode('the-client-code');
+
+			sandbox.assert.notCalled(SimpleModel.prototype.getIndexes);
+			sandbox.assert.notCalled(SimpleModel.prototype.createIndexes);
+			sandbox.assert.notCalled(SimpleModel.prototype.dropIndexes);
+		});
+	});
+
+	context('when model client rejects', () => {
+		it('shouldn\'t process indexes', async () => {
+
+			mockRequire(Client.getRelativePath(), ClientModel);
+
+			sandbox.stub(ClientModel.prototype, 'get')
+				.rejects('some error');
+
+			sandbox.stub(fs, 'readdirSync')
+				.returns(['simple.js']);
+
+			mockRequire(path.join(Models.path, 'simple.js'), SimpleModel);
+
+			sandbox.stub(SimpleModel.prototype, 'getIndexes');
+			sandbox.stub(SimpleModel.prototype, 'dropIndexes');
+			sandbox.stub(SimpleModel.prototype, 'createIndexes');
+
+			await execute();
 
 			sandbox.assert.notCalled(SimpleModel.prototype.getIndexes);
 			sandbox.assert.notCalled(SimpleModel.prototype.createIndexes);

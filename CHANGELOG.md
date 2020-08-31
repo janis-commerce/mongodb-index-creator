@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.2.1] - 2020-08-31
+### Added
+- Validation when `dropIndexes()` is called
+
+### Changed
+- Better summary and loggers
+
 ## [2.2.0] - 2020-08-31
 ### Added
 - Validation when `createIndexes()` is called
