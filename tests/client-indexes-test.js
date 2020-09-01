@@ -4,19 +4,19 @@ const assert = require('assert');
 
 const sandbox = require('sinon').createSandbox();
 const mockRequire = require('mock-require');
-const path = require('path');
-const fs = require('fs');
 
 const MongodbIndexCreator = require('../lib/mongodb-index-creator');
-const { Client, Models, Results } = require('../lib/helpers');
+const { Client, Results } = require('../lib/helpers');
 
 const ClientModel = require('./models/client/client');
 const SimpleModel = require('./models/client/simple');
+const CompleteModel = require('./models/client/complete');
 const EmptyModel = require('./models/client/empty');
 
 const SimpleReadModel = require('./models/client/simple-read');
-
 const SimpleCoreModel = require('./models/core/simple');
+
+const mockModel = require('./models/mock-model');
 
 const defaultIndex = require('./default-index');
 
@@ -71,10 +71,7 @@ describe('MongodbIndexCreator - Client Indexes', () => {
 
 			loadClient();
 
-			sandbox.stub(fs, 'readdirSync')
-				.returns(['empty.js']);
-
-			mockRequire(path.join(Models.path, 'empty.js'), EmptyModel);
+			mockModel(sandbox, { 'empty.js': EmptyModel });
 
 			sandbox.stub(EmptyModel.prototype, 'getIndexes')
 				.resolves([defaultIndex]);
@@ -95,10 +92,7 @@ describe('MongodbIndexCreator - Client Indexes', () => {
 
 			loadClient();
 
-			sandbox.stub(fs, 'readdirSync')
-				.returns(['simple.js']);
-
-			mockRequire(path.join(Models.path, 'simple.js'), SimpleModel);
+			mockModel(sandbox, { 'simple.js': SimpleModel });
 
 			sandbox.stub(SimpleModel.prototype, 'getIndexes')
 				.resolves([defaultIndex, {
@@ -122,10 +116,7 @@ describe('MongodbIndexCreator - Client Indexes', () => {
 
 			loadClient();
 
-			sandbox.stub(fs, 'readdirSync')
-				.returns(['simple.js']);
-
-			mockRequire(path.join(Models.path, 'simple.js'), SimpleModel);
+			mockModel(sandbox, { 'simple.js': SimpleModel });
 
 			sandbox.stub(SimpleModel.prototype, 'getIndexes')
 				.resolves([defaultIndex]);
@@ -146,8 +137,14 @@ describe('MongodbIndexCreator - Client Indexes', () => {
 			}]);
 
 			assert.deepStrictEqual(Results.results, {
-				[`the-client-code.${SimpleModel.prototype.databaseKey}.write.${SimpleModel.table}`]: {
-					created: ['field']
+				'the-client-code': {
+					[SimpleModel.prototype.databaseKey]: {
+						write: {
+							[SimpleModel.table]: {
+								created: ['field']
+							}
+						}
+					}
 				}
 			});
 		});
@@ -156,10 +153,7 @@ describe('MongodbIndexCreator - Client Indexes', () => {
 
 			loadClient();
 
-			sandbox.stub(fs, 'readdirSync')
-				.returns(['empty.js']);
-
-			mockRequire(path.join(Models.path, 'empty.js'), EmptyModel);
+			mockModel(sandbox, { 'empty.js': EmptyModel });
 
 			sandbox.stub(EmptyModel.prototype, 'getIndexes')
 				.resolves([defaultIndex, {
@@ -184,10 +178,7 @@ describe('MongodbIndexCreator - Client Indexes', () => {
 
 			loadClient();
 
-			sandbox.stub(fs, 'readdirSync')
-				.returns(['simple.js']);
-
-			mockRequire(path.join(Models.path, 'simple.js'), SimpleModel);
+			mockModel(sandbox, { 'simple.js': SimpleModel });
 
 			sandbox.stub(SimpleModel.prototype, 'getIndexes')
 				.resolves([defaultIndex, {
@@ -216,11 +207,7 @@ describe('MongodbIndexCreator - Client Indexes', () => {
 
 			loadClient();
 
-			sandbox.stub(fs, 'readdirSync')
-				.returns(['simple.js', 'core-simple.js']);
-
-			mockRequire(path.join(Models.path, 'simple.js'), SimpleModel);
-			mockRequire(path.join(Models.path, 'core-simple.js'), SimpleCoreModel);
+			mockModel(sandbox, { 'simple.js': SimpleModel, 'core-simple.js': SimpleCoreModel });
 
 			sandbox.stub(SimpleModel.prototype, 'getIndexes')
 				.resolves([defaultIndex]);
@@ -258,10 +245,7 @@ describe('MongodbIndexCreator - Client Indexes', () => {
 
 				loadClient(true);
 
-				sandbox.stub(fs, 'readdirSync')
-					.returns(['simple.js']);
-
-				mockRequire(path.join(Models.path, 'simple.js'), SimpleReadModel);
+				mockModel(sandbox, { 'simple.js': SimpleReadModel });
 
 				sandbox.stub(SimpleReadModel.prototype, 'getIndexes')
 					.resolves([defaultIndex]);
@@ -288,25 +272,22 @@ describe('MongodbIndexCreator - Client Indexes', () => {
 
 				loadClient(true);
 
-				sandbox.stub(fs, 'readdirSync')
-					.returns(['simple.js']);
-
-				mockRequire(path.join(Models.path, 'simple.js'), SimpleReadModel);
+				mockModel(sandbox, { 'simple.js': SimpleReadModel });
 
 				sandbox.stub(SimpleReadModel.prototype, 'getIndexes')
-					.onCall(0)
+					.onCall(0) // for write
 					.resolves([defaultIndex, {
 						name: 'field',
 						key: { field: 1 }
 					}])
-					.onCall(1)
+					.onCall(1) // for read
 					.resolves([defaultIndex, {
 						name: 'wrongField',
 						key: { wrongField: 1 }
 					}]);
 
 				sandbox.stub(SimpleReadModel.prototype, 'dropIndexes')
-					.resolves(true);
+					.rejects('dropping error message');
 
 				sandbox.stub(SimpleReadModel.prototype, 'createIndexes')
 					.resolves(true);
@@ -323,9 +304,88 @@ describe('MongodbIndexCreator - Client Indexes', () => {
 				}]);
 
 				assert.deepStrictEqual(Results.results, {
-					[`the-client-code.${SimpleReadModel.prototype.databaseKey}.read.${SimpleReadModel.table}`]: {
-						created: ['field'],
-						dropped: ['wrongField']
+					'the-client-code': {
+						[SimpleModel.prototype.databaseKey]: {
+							read: {
+								[SimpleModel.table]: {
+									created: ['field'],
+									collectionFailed: ['wrongField'] // drop
+								}
+							}
+						}
+					}
+				});
+			});
+		});
+
+		context('when createIndexes fails for some indexes', () => {
+			it('should log the result and continue without rejecting', async () => {
+
+				loadClient();
+
+				mockModel(sandbox, { 'simple.js': SimpleModel, 'complete.js': CompleteModel });
+
+				sandbox.stub(SimpleModel.prototype, 'getIndexes')
+					.resolves([defaultIndex, {
+						name: 'badIndex',
+						key: { badIndex: 1 }
+					}, {
+						name: 'otherBadIndex',
+						key: { otherBadIndex: 1 }
+					}]);
+
+				sandbox.stub(SimpleModel.prototype, 'dropIndexes')
+					.resolves(true);
+
+				sandbox.stub(SimpleModel.prototype, 'createIndexes')
+					.rejects('Some error');
+
+				sandbox.stub(CompleteModel.prototype, 'getIndexes')
+					.resolves([defaultIndex, {
+						name: 'oldIndex',
+						key: { oldIndex: 1 }
+					}]);
+
+				sandbox.stub(CompleteModel.prototype, 'dropIndexes')
+					.resolves(true);
+
+				sandbox.stub(CompleteModel.prototype, 'createIndexes')
+					.resolves(true);
+
+				await execute();
+
+				sandbox.assert.calledOnceWithExactly(SimpleModel.prototype.dropIndexes, ['badIndex', 'otherBadIndex']);
+
+				sandbox.assert.calledOnceWithExactly(SimpleModel.prototype.createIndexes, [{
+					name: 'field',
+					key: { field: 1 }
+				}]);
+
+				sandbox.assert.calledOnceWithExactly(CompleteModel.prototype.dropIndexes, ['oldIndex']);
+
+				sandbox.assert.calledOnceWithExactly(CompleteModel.prototype.createIndexes, [{
+					name: 'field',
+					key: { field: 1 }
+				}, {
+					name: 'foo_bar_unique',
+					key: { foo: 1, bar: 1 },
+					unique: true
+				}]);
+
+				assert.deepStrictEqual(Results.results, {
+					'the-client-code': {
+						[SimpleModel.prototype.databaseKey]: {
+							write: {
+								[SimpleModel.table]: {
+									collectionFailed: ['field'],
+									dropped: ['badIndex', 'otherBadIndex']
+								},
+								[CompleteModel.table]: {
+									created: ['field', 'foo_bar_unique'],
+									dropped: ['oldIndex']
+								}
+							}
+						}
 					}
 				});
 			});
@@ -341,10 +401,7 @@ describe('MongodbIndexCreator - Client Indexes', () => {
 			sandbox.stub(ClientModel.prototype, 'get')
 				.resolves([]);
 
-			sandbox.stub(fs, 'readdirSync')
-				.returns(['simple.js']);
-
-			mockRequire(path.join(Models.path, 'simple.js'), SimpleModel);
+			mockModel(sandbox, { 'simple.js': SimpleModel });
 
 			sandbox.stub(SimpleModel.prototype, 'getIndexes');
 			sandbox.stub(SimpleModel.prototype, 'dropIndexes');
@@ -366,10 +423,7 @@ describe('MongodbIndexCreator - Client Indexes', () => {
 			sandbox.stub(ClientModel.prototype, 'get')
 				.rejects('some error');
 
-			sandbox.stub(fs, 'readdirSync')
-				.returns(['simple.js']);
-
-			mockRequire(path.join(Models.path, 'simple.js'), SimpleModel);
+			mockModel(sandbox, { 'simple.js': SimpleModel });
 
 			sandbox.stub(SimpleModel.prototype, 'getIndexes');
 			sandbox.stub(SimpleModel.prototype, 'dropIndexes');

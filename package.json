@@ -42,6 +42,7 @@
     "@janiscommerce/api-session": "^3.0.0",
     "@janiscommerce/model": "^5.0.0",
     "lllog": "^1.1.2",
+    "lodash.merge": "^4.6.2",
     "superstruct": "0.6.1"
   }
 }

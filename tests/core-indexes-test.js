@@ -5,20 +5,19 @@ const assert = require('assert');
 const sandbox = require('sinon').createSandbox();
 const mockRequire = require('mock-require');
 
-const path = require('path');
-const fs = require('fs');
-
 const Model = require('@janiscommerce/model');
 
 const MongodbIndexCreator = require('../lib/mongodb-index-creator');
 const MongodbIndexCreatorError = require('../lib/mongodb-index-creator-error');
 
-const { Models, Results } = require('../lib/helpers');
+const { Results } = require('../lib/helpers');
 
 const SimpleModel = require('./models/core/simple');
 const EmptyModel = require('./models/core/empty');
 
 const invalidIndexesModelGenerator = require('./models/core/invalid-indexes');
+
+const mockModel = require('./models/mock-model');
 
 const defaultIndex = require('./default-index');
 
@@ -40,10 +39,7 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 	context('when valid indexes found in models', () => {
 		it('shouldn\'t create or drop any indexes if no index in model and collection', async () => {
 
-			sandbox.stub(fs, 'readdirSync')
-				.returns(['empty.js']);
-
-			mockRequire(path.join(Models.path, 'empty.js'), EmptyModel);
+			mockModel(sandbox, { 'empty.js': EmptyModel });
 
 			sandbox.stub(EmptyModel.prototype, 'getIndexes')
 				.resolves([defaultIndex]);
@@ -63,10 +59,7 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 
 		it('shouldn\'t create or drop any indexes if no changes in indexes', async () => {
 
-			sandbox.stub(fs, 'readdirSync')
-				.returns(['simple.js']);
-
-			mockRequire(path.join(Models.path, 'simple.js'), SimpleModel);
+			mockModel(sandbox, { 'simple.js': SimpleModel });
 
 			sandbox.stub(SimpleModel.prototype, 'getIndexes')
 				.resolves([defaultIndex, {
@@ -89,10 +82,7 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 
 		it('should create a core index', async () => {
 
-			sandbox.stub(fs, 'readdirSync')
-				.returns(['simple.js']);
-
-			mockRequire(path.join(Models.path, 'simple.js'), SimpleModel);
+			mockModel(sandbox, { 'simple.js': SimpleModel });
 
 			sandbox.stub(SimpleModel.prototype, 'getIndexes')
 				.resolves([defaultIndex]);
@@ -115,10 +105,7 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 
 		it('should drop a core index', async () => {
 
-			sandbox.stub(fs, 'readdirSync')
-				.returns(['empty.js']);
-
-			mockRequire(path.join(Models.path, 'empty.js'), EmptyModel);
+			mockModel(sandbox, { 'empty.js': EmptyModel });
 
 			sandbox.stub(EmptyModel.prototype, 'getIndexes')
 				.resolves([defaultIndex, {
@@ -141,10 +128,7 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 
 		it('should create and drop indexes and save results', async () => {
 
-			sandbox.stub(fs, 'readdirSync')
-				.returns(['simple.js']);
-
-			mockRequire(path.join(Models.path, 'simple.js'), SimpleModel);
+			mockModel(sandbox, { 'simple.js': SimpleModel });
 
 			sandbox.stub(SimpleModel.prototype, 'getIndexes')
 				.resolves([defaultIndex, {
@@ -171,19 +155,20 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 			}]);
 
 			assert.deepStrictEqual(Results.results, {
-				[`${SimpleModel.prototype.databaseKey}.write.${SimpleModel.table}`]: {
-					dropped: ['oldIndex', 'veryOldIndex'],
-					created: ['field']
+				[SimpleModel.prototype.databaseKey]: {
+					write: {
+						[SimpleModel.table]: {
+							dropped: ['oldIndex', 'veryOldIndex'],
+							created: ['field']
+						}
+					}
 				}
 			});
 		});
 
 		it('should create and drop indexes and if fails should save result', async () => {
 
-			sandbox.stub(fs, 'readdirSync')
-				.returns(['simple.js']);
-
-			mockRequire(path.join(Models.path, 'simple.js'), SimpleModel);
+			mockModel(sandbox, { 'simple.js': SimpleModel });
 
 			sandbox.stub(SimpleModel.prototype, 'getIndexes')
 				.resolves([defaultIndex, {
@@ -207,9 +192,13 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 			}]);
 
 			assert.deepStrictEqual(Results.results, {
-				[`${SimpleModel.prototype.databaseKey}.write.${SimpleModel.table}`]: {
-					dropFailed: ['oldIndex'],
-					createFailed: ['field']
+				[SimpleModel.prototype.databaseKey]: {
+					write: {
+						[SimpleModel.table]: {
+							dropFailed: ['oldIndex'],
+							createFailed: ['field']
+						}
+					}
 				}
 			});
 		});
@@ -217,10 +206,7 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 		context('when collection is not created in database', () => {
 			it('should create a core index', async () => {
 
-				sandbox.stub(fs, 'readdirSync')
-					.returns(['simple.js']);
-
-				mockRequire(path.join(Models.path, 'simple.js'), SimpleModel);
+				mockModel(sandbox, { 'simple.js': SimpleModel });
 
 				sandbox.stub(SimpleModel.prototype, 'getIndexes')
 					.rejects();
@@ -245,10 +231,7 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 		context('when createIndexes fails', () => {
 			it('should log the result and continue without rejecting', async () => {
 
-				sandbox.stub(fs, 'readdirSync')
-					.returns(['simple.js']);
-
-				mockRequire(path.join(Models.path, 'simple.js'), SimpleModel);
+				mockModel(sandbox, { 'simple.js': SimpleModel });
 
 				sandbox.stub(SimpleModel.prototype, 'getIndexes')
 					.resolves([defaultIndex]);
@@ -269,8 +252,12 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 				}]);
 
 				assert.deepStrictEqual(Results.results, {
-					[`${SimpleModel.prototype.databaseKey}.write.${SimpleModel.table}`]: {
-						collectionFailed: ['field']
+					[SimpleModel.prototype.databaseKey]: {
+						write: {
+							[SimpleModel.table]: {
+								collectionFailed: ['field']
+							}
+						}
 					}
 				});
 			});
@@ -279,10 +266,7 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 		context('when dropIndexes fails', () => {
 			it('should log the result and continue without rejecting', async () => {
 
-				sandbox.stub(fs, 'readdirSync')
-					.returns(['simple.js']);
-
-				mockRequire(path.join(Models.path, 'simple.js'), SimpleModel);
+				mockModel(sandbox, { 'simple.js': SimpleModel });
 
 				sandbox.stub(SimpleModel.prototype, 'getIndexes')
 					.resolves([defaultIndex, {
@@ -306,9 +290,13 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 				}]);
 
 				assert.deepStrictEqual(Results.results, {
-					[`${SimpleModel.prototype.databaseKey}.write.${SimpleModel.table}`]: {
-						collectionFailed: ['otherField'],
-						created: ['field']
+					[SimpleModel.prototype.databaseKey]: {
+						write: {
+							[SimpleModel.table]: {
+								collectionFailed: ['otherField'],
+								created: ['field']
+							}
+						}
 					}
 				});
 			});
@@ -356,12 +344,9 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 		invalidIndexes.forEach(invalidIndex => {
 			it('rejects if invalid index found in model', async () => {
 
-				sandbox.stub(fs, 'readdirSync')
-					.returns(['invalid-indexes.js']);
-
 				const InvalidIndexesModel = invalidIndexesModelGenerator(invalidIndex);
 
-				mockRequire(path.join(Models.path, 'invalid-indexes.js'), InvalidIndexesModel);
+				mockModel(sandbox, { 'invalid-indexes.js': InvalidIndexesModel });
 
 				sandbox.stub(InvalidIndexesModel.prototype, 'getIndexes')
 					.resolves([defaultIndex]);
