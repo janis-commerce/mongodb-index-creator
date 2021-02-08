@@ -4,7 +4,7 @@ const mockRequire = require('mock-require');
 const path = require('path');
 const fs = require('fs');
 
-const { Models } = require('../../lib/helpers');
+const { ModelHelper } = require('../../lib/helpers');
 
 module.exports = (sandbox, models) => {
 
@@ -12,6 +12,6 @@ module.exports = (sandbox, models) => {
 		.returns(Object.keys(models));
 
 	Object.entries(models).forEach(([file, ModelClass]) => {
-		mockRequire(path.join(Models.path, file), ModelClass);
+		mockRequire(path.join(ModelHelper.path, file), ModelClass);
 	});
 };

@@ -129,13 +129,3 @@ module.exports = helper({
 	]
 });
 ```
-
-## Errors
-
-The errors are informed with a `MongoDbIndexCreatorError`.
-This object has a code that can be useful for a correct error handling.
-The codes are the following:
-
-| Code | Description                           |
-|------|---------------------------------------|
-| 1    | Invalid collection indexes in a model |

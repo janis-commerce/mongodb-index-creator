@@ -2,13 +2,13 @@
 
 const assert = require('assert');
 
-const sandbox = require('sinon').createSandbox();
+const sinon = require('sinon');
 const mockRequire = require('mock-require');
 
 const Model = require('@janiscommerce/model');
 
+const Settings = require('@janiscommerce/settings');
 const MongodbIndexCreator = require('../lib/mongodb-index-creator');
-const MongodbIndexCreatorError = require('../lib/mongodb-index-creator-error');
 
 const { Results } = require('../lib/helpers');
 
@@ -23,10 +23,19 @@ const defaultIndex = require('./default-index');
 
 require('../lib/colorful-lllog')('none');
 
+const fakeDBSettings = {
+	core: { write: {} }
+};
+
 describe('MongodbIndexCreator - Core Indexes', () => {
 
+	beforeEach(() => {
+		sinon.stub(Settings, 'get')
+			.returns(fakeDBSettings);
+	});
+
 	afterEach(() => {
-		sandbox.restore();
+		sinon.restore();
 		mockRequire.stopAll();
 		Results.results = null;
 	});
@@ -39,65 +48,65 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 	context('when valid indexes found in models', () => {
 		it('shouldn\'t create or drop any indexes if no index in model and collection', async () => {
 
-			mockModel(sandbox, { 'empty.js': EmptyModel });
+			mockModel(sinon, { 'empty.js': EmptyModel });
 
-			sandbox.stub(EmptyModel.prototype, 'getIndexes')
+			sinon.stub(EmptyModel.prototype, 'getIndexes')
 				.resolves([defaultIndex]);
 
-			sandbox.stub(EmptyModel.prototype, 'dropIndexes')
+			sinon.stub(EmptyModel.prototype, 'dropIndexes')
 				.resolves(true);
 
-			sandbox.stub(EmptyModel.prototype, 'createIndexes')
+			sinon.stub(EmptyModel.prototype, 'createIndexes')
 				.resolves(true);
 
 			await execute();
 
-			sandbox.assert.notCalled(EmptyModel.prototype.dropIndexes);
-			sandbox.assert.notCalled(EmptyModel.prototype.createIndexes);
+			sinon.assert.notCalled(EmptyModel.prototype.dropIndexes);
+			sinon.assert.notCalled(EmptyModel.prototype.createIndexes);
 
 		});
 
 		it('shouldn\'t create or drop any indexes if no changes in indexes', async () => {
 
-			mockModel(sandbox, { 'simple.js': SimpleModel });
+			mockModel(sinon, { 'simple.js': SimpleModel });
 
-			sandbox.stub(SimpleModel.prototype, 'getIndexes')
+			sinon.stub(SimpleModel.prototype, 'getIndexes')
 				.resolves([defaultIndex, {
 					name: 'field',
 					key: { field: 1 }
 				}]);
 
-			sandbox.stub(SimpleModel.prototype, 'dropIndexes')
+			sinon.stub(SimpleModel.prototype, 'dropIndexes')
 				.resolves(true);
 
-			sandbox.stub(SimpleModel.prototype, 'createIndexes')
+			sinon.stub(SimpleModel.prototype, 'createIndexes')
 				.resolves(true);
 
 			await execute();
 
-			sandbox.assert.notCalled(SimpleModel.prototype.dropIndexes);
-			sandbox.assert.notCalled(SimpleModel.prototype.createIndexes);
+			sinon.assert.notCalled(SimpleModel.prototype.dropIndexes);
+			sinon.assert.notCalled(SimpleModel.prototype.createIndexes);
 
 		});
 
 		it('should create a core index', async () => {
 
-			mockModel(sandbox, { 'simple.js': SimpleModel });
+			mockModel(sinon, { 'simple.js': SimpleModel });
 
-			sandbox.stub(SimpleModel.prototype, 'getIndexes')
+			sinon.stub(SimpleModel.prototype, 'getIndexes')
 				.resolves([defaultIndex]);
 
-			sandbox.stub(SimpleModel.prototype, 'dropIndexes')
+			sinon.stub(SimpleModel.prototype, 'dropIndexes')
 				.resolves(true);
 
-			sandbox.stub(SimpleModel.prototype, 'createIndexes')
+			sinon.stub(SimpleModel.prototype, 'createIndexes')
 				.resolves(true);
 
 			await execute();
 
-			sandbox.assert.notCalled(SimpleModel.prototype.dropIndexes);
+			sinon.assert.notCalled(SimpleModel.prototype.dropIndexes);
 
-			sandbox.assert.calledOnceWithExactly(SimpleModel.prototype.createIndexes, [{
+			sinon.assert.calledOnceWithExactly(SimpleModel.prototype.createIndexes, [{
 				name: 'field',
 				key: { field: 1 }
 			}]);
@@ -105,32 +114,32 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 
 		it('should drop a core index', async () => {
 
-			mockModel(sandbox, { 'empty.js': EmptyModel });
+			mockModel(sinon, { 'empty.js': EmptyModel });
 
-			sandbox.stub(EmptyModel.prototype, 'getIndexes')
+			sinon.stub(EmptyModel.prototype, 'getIndexes')
 				.resolves([defaultIndex, {
 					name: 'field',
 					key: { field: 1 }
 				}]);
 
-			sandbox.stub(EmptyModel.prototype, 'dropIndexes')
+			sinon.stub(EmptyModel.prototype, 'dropIndexes')
 				.resolves(true);
 
-			sandbox.stub(EmptyModel.prototype, 'createIndexes')
+			sinon.stub(EmptyModel.prototype, 'createIndexes')
 				.resolves(true);
 
 			await execute();
 
-			sandbox.assert.calledOnceWithExactly(EmptyModel.prototype.dropIndexes, ['field']);
+			sinon.assert.calledOnceWithExactly(EmptyModel.prototype.dropIndexes, ['field']);
 
-			sandbox.assert.notCalled(EmptyModel.prototype.createIndexes);
+			sinon.assert.notCalled(EmptyModel.prototype.createIndexes);
 		});
 
 		it('should create and drop indexes and save results', async () => {
 
-			mockModel(sandbox, { 'simple.js': SimpleModel });
+			mockModel(sinon, { 'simple.js': SimpleModel });
 
-			sandbox.stub(SimpleModel.prototype, 'getIndexes')
+			sinon.stub(SimpleModel.prototype, 'getIndexes')
 				.resolves([defaultIndex, {
 					name: 'oldIndex',
 					key: { oldIndex: 1 }
@@ -139,17 +148,17 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 					key: { veryOldIndex: 1 }
 				}]);
 
-			sandbox.stub(SimpleModel.prototype, 'dropIndexes')
+			sinon.stub(SimpleModel.prototype, 'dropIndexes')
 				.resolves(true);
 
-			sandbox.stub(SimpleModel.prototype, 'createIndexes')
+			sinon.stub(SimpleModel.prototype, 'createIndexes')
 				.resolves(true);
 
 			await execute();
 
-			sandbox.assert.calledOnceWithExactly(SimpleModel.prototype.dropIndexes, ['oldIndex', 'veryOldIndex']);
+			sinon.assert.calledOnceWithExactly(SimpleModel.prototype.dropIndexes, ['oldIndex', 'veryOldIndex']);
 
-			sandbox.assert.calledOnceWithExactly(SimpleModel.prototype.createIndexes, [{
+			sinon.assert.calledOnceWithExactly(SimpleModel.prototype.createIndexes, [{
 				name: 'field',
 				key: { field: 1 }
 			}]);
@@ -168,25 +177,25 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 
 		it('should create and drop indexes and if fails should save result', async () => {
 
-			mockModel(sandbox, { 'simple.js': SimpleModel });
+			mockModel(sinon, { 'simple.js': SimpleModel });
 
-			sandbox.stub(SimpleModel.prototype, 'getIndexes')
+			sinon.stub(SimpleModel.prototype, 'getIndexes')
 				.resolves([defaultIndex, {
 					name: 'oldIndex',
 					key: { oldIndex: 1 }
 				}]);
 
-			sandbox.stub(SimpleModel.prototype, 'dropIndexes')
+			sinon.stub(SimpleModel.prototype, 'dropIndexes')
 				.resolves(false);
 
-			sandbox.stub(SimpleModel.prototype, 'createIndexes')
+			sinon.stub(SimpleModel.prototype, 'createIndexes')
 				.resolves(false);
 
 			await execute();
 
-			sandbox.assert.calledOnceWithExactly(SimpleModel.prototype.dropIndexes, ['oldIndex']);
+			sinon.assert.calledOnceWithExactly(SimpleModel.prototype.dropIndexes, ['oldIndex']);
 
-			sandbox.assert.calledOnceWithExactly(SimpleModel.prototype.createIndexes, [{
+			sinon.assert.calledOnceWithExactly(SimpleModel.prototype.createIndexes, [{
 				name: 'field',
 				key: { field: 1 }
 			}]);
@@ -206,22 +215,22 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 		context('when collection is not created in database', () => {
 			it('should create a core index', async () => {
 
-				mockModel(sandbox, { 'simple.js': SimpleModel });
+				mockModel(sinon, { 'simple.js': SimpleModel });
 
-				sandbox.stub(SimpleModel.prototype, 'getIndexes')
+				sinon.stub(SimpleModel.prototype, 'getIndexes')
 					.rejects();
 
-				sandbox.stub(SimpleModel.prototype, 'dropIndexes')
+				sinon.stub(SimpleModel.prototype, 'dropIndexes')
 					.resolves(true);
 
-				sandbox.stub(SimpleModel.prototype, 'createIndexes')
+				sinon.stub(SimpleModel.prototype, 'createIndexes')
 					.resolves(true);
 
 				await execute();
 
-				sandbox.assert.notCalled(SimpleModel.prototype.dropIndexes);
+				sinon.assert.notCalled(SimpleModel.prototype.dropIndexes);
 
-				sandbox.assert.calledOnceWithExactly(SimpleModel.prototype.createIndexes, [{
+				sinon.assert.calledOnceWithExactly(SimpleModel.prototype.createIndexes, [{
 					name: 'field',
 					key: { field: 1 }
 				}]);
@@ -231,22 +240,22 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 		context('when createIndexes fails', () => {
 			it('should log the result and continue without rejecting', async () => {
 
-				mockModel(sandbox, { 'simple.js': SimpleModel });
+				mockModel(sinon, { 'simple.js': SimpleModel });
 
-				sandbox.stub(SimpleModel.prototype, 'getIndexes')
+				sinon.stub(SimpleModel.prototype, 'getIndexes')
 					.resolves([defaultIndex]);
 
-				sandbox.stub(SimpleModel.prototype, 'dropIndexes')
+				sinon.stub(SimpleModel.prototype, 'dropIndexes')
 					.resolves(true);
 
-				sandbox.stub(SimpleModel.prototype, 'createIndexes')
+				sinon.stub(SimpleModel.prototype, 'createIndexes')
 					.rejects('Some error');
 
 				await execute();
 
-				sandbox.assert.notCalled(SimpleModel.prototype.dropIndexes);
+				sinon.assert.notCalled(SimpleModel.prototype.dropIndexes);
 
-				sandbox.assert.calledOnceWithExactly(SimpleModel.prototype.createIndexes, [{
+				sinon.assert.calledOnceWithExactly(SimpleModel.prototype.createIndexes, [{
 					name: 'field',
 					key: { field: 1 }
 				}]);
@@ -266,25 +275,25 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 		context('when dropIndexes fails', () => {
 			it('should log the result and continue without rejecting', async () => {
 
-				mockModel(sandbox, { 'simple.js': SimpleModel });
+				mockModel(sinon, { 'simple.js': SimpleModel });
 
-				sandbox.stub(SimpleModel.prototype, 'getIndexes')
+				sinon.stub(SimpleModel.prototype, 'getIndexes')
 					.resolves([defaultIndex, {
 						name: 'otherField',
 						key: { otherField: 1 }
 					}]);
 
-				sandbox.stub(SimpleModel.prototype, 'dropIndexes')
+				sinon.stub(SimpleModel.prototype, 'dropIndexes')
 					.rejects('Some error');
 
-				sandbox.stub(SimpleModel.prototype, 'createIndexes')
+				sinon.stub(SimpleModel.prototype, 'createIndexes')
 					.resolves(true);
 
 				await execute();
 
-				sandbox.assert.calledOnceWithExactly(SimpleModel.prototype.dropIndexes, ['otherField']);
+				sinon.assert.calledOnceWithExactly(SimpleModel.prototype.dropIndexes, ['otherField']);
 
-				sandbox.assert.calledOnceWithExactly(SimpleModel.prototype.createIndexes, [{
+				sinon.assert.calledOnceWithExactly(SimpleModel.prototype.createIndexes, [{
 					name: 'field',
 					key: { field: 1 }
 				}]);
@@ -346,25 +355,22 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 
 				const InvalidIndexesModel = invalidIndexesModelGenerator(invalidIndex);
 
-				mockModel(sandbox, { 'invalid-indexes.js': InvalidIndexesModel });
+				mockModel(sinon, { 'invalid-indexes.js': InvalidIndexesModel });
 
-				sandbox.stub(InvalidIndexesModel.prototype, 'getIndexes')
+				sinon.stub(InvalidIndexesModel.prototype, 'getIndexes')
 					.resolves([defaultIndex]);
 
-				sandbox.stub(InvalidIndexesModel.prototype, 'dropIndexes')
+				sinon.stub(InvalidIndexesModel.prototype, 'dropIndexes')
 					.resolves(true);
 
-				sandbox.stub(InvalidIndexesModel.prototype, 'createIndexes')
+				sinon.stub(InvalidIndexesModel.prototype, 'createIndexes')
 					.resolves(true);
 
-				await assert.rejects(() => execute(), {
-					name: 'MongodbIndexCreatorError',
-					code: MongodbIndexCreatorError.codes.INVALID_COLLECTION_INDEXES
-				});
+				await execute();
 
-				sandbox.assert.notCalled(InvalidIndexesModel.prototype.getIndexes);
-				sandbox.assert.notCalled(InvalidIndexesModel.prototype.dropIndexes);
-				sandbox.assert.notCalled(InvalidIndexesModel.prototype.createIndexes);
+				sinon.assert.notCalled(InvalidIndexesModel.prototype.getIndexes);
+				sinon.assert.notCalled(InvalidIndexesModel.prototype.dropIndexes);
+				sinon.assert.notCalled(InvalidIndexesModel.prototype.createIndexes);
 
 			});
 		});
@@ -373,15 +379,15 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 	context('when models files not found', () => {
 		it('shouldn\'t create indexes', async () => {
 
-			sandbox.stub(Model.prototype, 'getIndexes');
-			sandbox.stub(Model.prototype, 'dropIndexes');
-			sandbox.stub(Model.prototype, 'createIndexes');
+			sinon.stub(Model.prototype, 'getIndexes');
+			sinon.stub(Model.prototype, 'dropIndexes');
+			sinon.stub(Model.prototype, 'createIndexes');
 
 			await execute();
 
-			sandbox.assert.notCalled(Model.prototype.getIndexes);
-			sandbox.assert.notCalled(Model.prototype.dropIndexes);
-			sandbox.assert.notCalled(Model.prototype.createIndexes);
+			sinon.assert.notCalled(Model.prototype.getIndexes);
+			sinon.assert.notCalled(Model.prototype.dropIndexes);
+			sinon.assert.notCalled(Model.prototype.createIndexes);
 		});
 	});
 

@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.3.0] - 2021-02-08
+### Added
+- Detect the index has changed when change the properties `key`, `unique`, `expireAfterSeconds`, `partialFilterExpression`, `sparse`
+- Drop and create the indexes separately to avoid operation collisions 
+- Optimized code using the last version of @janiscommerce/api-session with 'offline' client injection
+- Index struct validation errors will be shown in output 
+
 ## [2.2.3] - 2020-09-03
 ### Changed
 - Better validation for client databases
