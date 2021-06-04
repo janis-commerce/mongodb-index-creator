@@ -22,8 +22,4 @@ module.exports = class CompleteModel extends Model {
 			unique: true
 		}];
 	}
-
-	hasReadDB() {
-		return false;
-	}
 };

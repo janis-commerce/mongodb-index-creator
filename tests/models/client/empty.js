@@ -11,8 +11,4 @@ module.exports = class EmptyModel extends Model {
 	static get table() {
 		return 'empty';
 	}
-
-	hasReadDB() {
-		return false;
-	}
 };

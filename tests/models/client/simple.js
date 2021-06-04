@@ -18,8 +18,4 @@ module.exports = class SimpleModel extends Model {
 			key: { field: 1 }
 		}];
 	}
-
-	hasReadDB() {
-		return false;
-	}
 };

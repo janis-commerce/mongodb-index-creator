@@ -14,12 +14,11 @@ const SimpleModel = require('./models/client/simple');
 const CompleteModel = require('./models/client/complete');
 const EmptyModel = require('./models/client/empty');
 
-const SimpleReadModel = require('./models/client/simple-read');
 const SimpleCoreModel = require('./models/core/simple');
 
 const mockModel = require('./models/mock-model');
 
-const defaultIndex = require('./default-index');
+const defaultIndex = require('./default-index.json');
 
 require('../lib/colorful-lllog')('none');
 
@@ -40,7 +39,7 @@ describe('MongodbIndexCreator - Client Indexes', () => {
 		Results.results = null;
 	});
 
-	const loadClient = (addRead = false) => {
+	const loadClient = () => {
 
 		mockRequire(Client.getRelativePath(), ClientModel);
 
@@ -58,8 +57,7 @@ describe('MongodbIndexCreator - Client Indexes', () => {
 				code: 'the-client-code',
 				databases: {
 					default: {
-						write: {},
-						...addRead ? { read: {} } : {}
+						write: {}
 					}
 				}
 			}]);
@@ -154,10 +152,8 @@ describe('MongodbIndexCreator - Client Indexes', () => {
 			assert.deepStrictEqual(Results.results, {
 				'the-client-code': {
 					[SimpleModel.prototype.databaseKey]: {
-						write: {
-							[SimpleModel.table]: {
-								created: ['field']
-							}
+						[SimpleModel.table]: {
+							created: ['field']
 						}
 					}
 				}
@@ -174,7 +170,10 @@ describe('MongodbIndexCreator - Client Indexes', () => {
 				.resolves([defaultIndex, {
 					name: 'field',
 					key: { field: 1 },
-					unique: true
+					unique: true,
+					sparse: true,
+					expireAfterSeconds: 1,
+					partialFilterExpression: { eans: { $type: 'string' } }
 				}]);
 
 			sinon.stub(SimpleModel.prototype, 'dropIndexes')
@@ -195,11 +194,9 @@ describe('MongodbIndexCreator - Client Indexes', () => {
 			assert.deepStrictEqual(Results.results, {
 				'the-client-code': {
 					[SimpleModel.prototype.databaseKey]: {
-						write: {
-							[SimpleModel.table]: {
-								created: ['field'],
-								dropped: ['field']
-							}
+						[SimpleModel.table]: {
+							created: ['field'],
+							dropped: ['field']
 						}
 					}
 				}
@@ -295,85 +292,6 @@ describe('MongodbIndexCreator - Client Indexes', () => {
 
 		});
 
-		context('when model has read db', () => {
-
-			it('should create a client index when write and read databases present', async () => {
-
-				loadClient(true);
-
-				mockModel(sinon, { 'simple.js': SimpleReadModel });
-
-				sinon.stub(SimpleReadModel.prototype, 'getIndexes')
-					.resolves([defaultIndex]);
-
-				sinon.stub(SimpleReadModel.prototype, 'dropIndexes')
-					.resolves(true);
-
-				sinon.stub(SimpleReadModel.prototype, 'createIndexes')
-					.resolves(true);
-
-				await execute();
-
-				sinon.assert.notCalled(SimpleReadModel.prototype.dropIndexes);
-
-				sinon.assert.calledTwice(SimpleReadModel.prototype.createIndexes);
-
-				sinon.assert.calledWithExactly(SimpleReadModel.prototype.createIndexes, [{
-					name: 'field',
-					key: { field: 1 }
-				}]);
-			});
-
-			it('should create and drop client indexex for read database', async () => {
-
-				loadClient(true);
-
-				mockModel(sinon, { 'simple.js': SimpleReadModel });
-
-				sinon.stub(SimpleReadModel.prototype, 'getIndexes')
-					.onCall(0) // for write
-					.resolves([defaultIndex, {
-						name: 'field',
-						key: { field: 1 }
-					}])
-					.onCall(1) // for read
-					.resolves([defaultIndex, {
-						name: 'wrongField',
-						key: { wrongField: 1 }
-					}]);
-
-				sinon.stub(SimpleReadModel.prototype, 'dropIndexes')
-					.rejects('dropping error message');
-
-				sinon.stub(SimpleReadModel.prototype, 'createIndexes')
-					.resolves(true);
-
-				await execute();
-
-				// se dropea para la base read
-				sinon.assert.calledOnceWithExactly(SimpleReadModel.prototype.dropIndexes, ['wrongField']);
-
-				// se crea para la base read
-				sinon.assert.calledOnceWithExactly(SimpleReadModel.prototype.createIndexes, [{
-					name: 'field',
-					key: { field: 1 }
-				}]);
-
-				assert.deepStrictEqual(Results.results, {
-					'the-client-code': {
-						[SimpleModel.prototype.databaseKey]: {
-							read: {
-								[SimpleModel.table]: {
-									created: ['field'],
-									collectionFailed: ['wrongField'] // drop
-								}
-							}
-						}
-					}
-				});
-			});
-		});
-
 		context('when createIndexes fails for some indexes', () => {
 			it('should log the result and continue without rejecting', async () => {
 
@@ -431,15 +349,13 @@ describe('MongodbIndexCreator - Client Indexes', () => {
 				assert.deepStrictEqual(Results.results, {
 					'the-client-code': {
 						[SimpleModel.prototype.databaseKey]: {
-							write: {
-								[SimpleModel.table]: {
-									collectionFailed: ['field'],
-									dropped: ['badIndex', 'otherBadIndex']
-								},
-								[CompleteModel.table]: {
-									created: ['field', 'foo_bar_unique'],
-									dropped: ['oldIndex']
-								}
+							[SimpleModel.table]: {
+								collectionFailed: ['field'],
+								dropped: ['badIndex', 'otherBadIndex']
+							},
+							[CompleteModel.table]: {
+								created: ['field', 'foo_bar_unique'],
+								dropped: ['oldIndex']
 							}
 						}
 					}

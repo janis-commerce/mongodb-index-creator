@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.3.1] - 2021-06-04
+### Fixed
+- Removed `read` database indexes operations
+
 ## [2.3.0] - 2021-02-08
 ### Added
 - Detect the index has changed when change the properties `key`, `unique`, `expireAfterSeconds`, `partialFilterExpression`, `sparse`

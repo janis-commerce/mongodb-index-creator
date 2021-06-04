@@ -19,7 +19,7 @@ const invalidIndexesModelGenerator = require('./models/core/invalid-indexes');
 
 const mockModel = require('./models/mock-model');
 
-const defaultIndex = require('./default-index');
+const defaultIndex = require('./default-index.json');
 
 require('../lib/colorful-lllog')('none');
 
@@ -165,11 +165,9 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 
 			assert.deepStrictEqual(Results.results, {
 				[SimpleModel.prototype.databaseKey]: {
-					write: {
-						[SimpleModel.table]: {
-							dropped: ['oldIndex', 'veryOldIndex'],
-							created: ['field']
-						}
+					[SimpleModel.table]: {
+						dropped: ['oldIndex', 'veryOldIndex'],
+						created: ['field']
 					}
 				}
 			});
@@ -202,11 +200,9 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 
 			assert.deepStrictEqual(Results.results, {
 				[SimpleModel.prototype.databaseKey]: {
-					write: {
-						[SimpleModel.table]: {
-							dropFailed: ['oldIndex'],
-							createFailed: ['field']
-						}
+					[SimpleModel.table]: {
+						dropFailed: ['oldIndex'],
+						createFailed: ['field']
 					}
 				}
 			});
@@ -262,10 +258,8 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 
 				assert.deepStrictEqual(Results.results, {
 					[SimpleModel.prototype.databaseKey]: {
-						write: {
-							[SimpleModel.table]: {
-								collectionFailed: ['field']
-							}
+						[SimpleModel.table]: {
+							collectionFailed: ['field']
 						}
 					}
 				});
@@ -300,11 +294,9 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 
 				assert.deepStrictEqual(Results.results, {
 					[SimpleModel.prototype.databaseKey]: {
-						write: {
-							[SimpleModel.table]: {
-								collectionFailed: ['otherField'],
-								created: ['field']
-							}
+						[SimpleModel.table]: {
+							collectionFailed: ['otherField'],
+							created: ['field']
 						}
 					}
 				});
