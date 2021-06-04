@@ -54,7 +54,9 @@ Each Index object in the `indexes` _getter_ will be validated according the foll
 name: 'string'
 key: 'object'
 unique: 'boolean?' # optional
+sparse: 'boolean?' # optional
 expireAfterSeconds: 'number?' # optional
+partialFilterExpression: 'object?' # optional
 ```
 
 For more information see [MongoDB Indexes](https://docs.mongodb.com/manual/indexes/)
