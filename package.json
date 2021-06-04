@@ -1,6 +1,6 @@
 {
   "name": "@janiscommerce/mongodb-index-creator",
-  "version": "2.3.2",
+  "version": "2.3.3",
   "description": "A package for build MongoDB indexes",
   "main": "lib/mongodb-index-creator.js",
   "bin": {
