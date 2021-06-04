@@ -46,10 +46,10 @@ describe('MongodbIndexCreator - Client Indexes', () => {
 		sinon.stub(ClientModel.prototype, 'getIndexes')
 			.resolves([defaultIndex]);
 
-		sinon.stub(ClientModel.prototype, 'dropIndexes')
+		sinon.stub(ClientModel.prototype, 'dropIndex')
 			.resolves(true);
 
-		sinon.stub(ClientModel.prototype, 'createIndexes')
+		sinon.stub(ClientModel.prototype, 'createIndex')
 			.resolves(true);
 
 		sinon.stub(ClientModel.prototype, 'get')
@@ -84,16 +84,16 @@ describe('MongodbIndexCreator - Client Indexes', () => {
 			sinon.stub(EmptyModel.prototype, 'getIndexes')
 				.resolves([defaultIndex]);
 
-			sinon.stub(EmptyModel.prototype, 'dropIndexes')
+			sinon.stub(EmptyModel.prototype, 'dropIndex')
 				.resolves(true);
 
-			sinon.stub(EmptyModel.prototype, 'createIndexes')
+			sinon.stub(EmptyModel.prototype, 'createIndex')
 				.resolves(true);
 
 			await execute();
 
-			sinon.assert.notCalled(EmptyModel.prototype.dropIndexes);
-			sinon.assert.notCalled(EmptyModel.prototype.createIndexes);
+			sinon.assert.notCalled(EmptyModel.prototype.dropIndex);
+			sinon.assert.notCalled(EmptyModel.prototype.createIndex);
 		});
 
 		it('shouldn\'t create or drop any indexes if no changes in indexes', async () => {
@@ -108,16 +108,16 @@ describe('MongodbIndexCreator - Client Indexes', () => {
 					key: { field: 1 }
 				}]);
 
-			sinon.stub(SimpleModel.prototype, 'dropIndexes')
+			sinon.stub(SimpleModel.prototype, 'dropIndex')
 				.resolves(true);
 
-			sinon.stub(SimpleModel.prototype, 'createIndexes')
+			sinon.stub(SimpleModel.prototype, 'createIndex')
 				.resolves(true);
 
 			await execute();
 
-			sinon.assert.notCalled(SimpleModel.prototype.dropIndexes);
-			sinon.assert.notCalled(SimpleModel.prototype.createIndexes);
+			sinon.assert.notCalled(SimpleModel.prototype.dropIndex);
+			sinon.assert.notCalled(SimpleModel.prototype.createIndex);
 		});
 
 		it('should create a client index and save results', async () => {
@@ -134,27 +134,25 @@ describe('MongodbIndexCreator - Client Indexes', () => {
 			sinon.stub(SimpleModel.prototype, 'getIndexes')
 				.resolves([defaultIndex]);
 
-			sinon.stub(SimpleModel.prototype, 'dropIndexes')
+			sinon.stub(SimpleModel.prototype, 'dropIndex')
 				.resolves(true);
 
-			sinon.stub(SimpleModel.prototype, 'createIndexes')
+			sinon.stub(SimpleModel.prototype, 'createIndex')
 				.resolves(true);
 
 			await execute();
 
-			sinon.assert.notCalled(SimpleModel.prototype.dropIndexes);
+			sinon.assert.notCalled(SimpleModel.prototype.dropIndex);
 
-			sinon.assert.calledOnceWithExactly(SimpleModel.prototype.createIndexes, [{
+			sinon.assert.calledOnceWithExactly(SimpleModel.prototype.createIndex, {
 				name: 'field',
 				key: { field: 1 }
-			}]);
+			});
 
 			assert.deepStrictEqual(Results.results, {
 				'the-client-code': {
-					[SimpleModel.prototype.databaseKey]: {
-						[SimpleModel.table]: {
-							created: ['field']
-						}
+					[SimpleModel.table]: {
+						created: ['field']
 					}
 				}
 			});
@@ -176,28 +174,26 @@ describe('MongodbIndexCreator - Client Indexes', () => {
 					partialFilterExpression: { eans: { $type: 'string' } }
 				}]);
 
-			sinon.stub(SimpleModel.prototype, 'dropIndexes')
+			sinon.stub(SimpleModel.prototype, 'dropIndex')
 				.resolves(true);
 
-			sinon.stub(SimpleModel.prototype, 'createIndexes')
+			sinon.stub(SimpleModel.prototype, 'createIndex')
 				.resolves(true);
 
 			await execute();
 
-			sinon.assert.calledOnceWithExactly(SimpleModel.prototype.dropIndexes, ['field']);
+			sinon.assert.calledOnceWithExactly(SimpleModel.prototype.dropIndex, 'field');
 
-			sinon.assert.calledOnceWithExactly(SimpleModel.prototype.createIndexes, [{
+			sinon.assert.calledOnceWithExactly(SimpleModel.prototype.createIndex, {
 				name: 'field',
 				key: { field: 1 }
-			}]);
+			});
 
 			assert.deepStrictEqual(Results.results, {
 				'the-client-code': {
-					[SimpleModel.prototype.databaseKey]: {
-						[SimpleModel.table]: {
-							created: ['field'],
-							dropped: ['field']
-						}
+					[SimpleModel.table]: {
+						created: ['field'],
+						dropped: ['field']
 					}
 				}
 			});
@@ -215,17 +211,17 @@ describe('MongodbIndexCreator - Client Indexes', () => {
 					key: { oldIndex: 1 }
 				}]);
 
-			sinon.stub(EmptyModel.prototype, 'dropIndexes')
+			sinon.stub(EmptyModel.prototype, 'dropIndex')
 				.resolves(true);
 
-			sinon.stub(EmptyModel.prototype, 'createIndexes')
+			sinon.stub(EmptyModel.prototype, 'createIndex')
 				.resolves(true);
 
 			await execute();
 
-			sinon.assert.calledOnceWithExactly(EmptyModel.prototype.dropIndexes, ['oldIndex']);
+			sinon.assert.calledOnceWithExactly(EmptyModel.prototype.dropIndex, 'oldIndex');
 
-			sinon.assert.notCalled(EmptyModel.prototype.createIndexes);
+			sinon.assert.notCalled(EmptyModel.prototype.createIndex);
 		});
 
 		it('should create and drop client indexes', async () => {
@@ -240,21 +236,20 @@ describe('MongodbIndexCreator - Client Indexes', () => {
 					key: { oldIndex: 1 }
 				}]);
 
-			sinon.stub(SimpleModel.prototype, 'dropIndexes')
+			sinon.stub(SimpleModel.prototype, 'dropIndex')
 				.resolves(true);
 
-			sinon.stub(SimpleModel.prototype, 'createIndexes')
+			sinon.stub(SimpleModel.prototype, 'createIndex')
 				.resolves(true);
 
 			await execute();
 
-			sinon.assert.calledOnceWithExactly(SimpleModel.prototype.dropIndexes, ['oldIndex']);
+			sinon.assert.calledOnceWithExactly(SimpleModel.prototype.dropIndex, 'oldIndex');
 
-			sinon.assert.calledOnceWithExactly(SimpleModel.prototype.createIndexes, [{
+			sinon.assert.calledOnceWithExactly(SimpleModel.prototype.createIndex, {
 				name: 'field',
 				key: { field: 1 }
-			}]);
-
+			});
 		});
 
 		it('should process only for client when is executed with executeForClientCode(code)', async () => {
@@ -266,33 +261,33 @@ describe('MongodbIndexCreator - Client Indexes', () => {
 			sinon.stub(SimpleModel.prototype, 'getIndexes')
 				.resolves([defaultIndex]);
 
-			sinon.spy(SimpleModel.prototype, 'dropIndexes');
+			sinon.spy(SimpleModel.prototype, 'dropIndex');
 
-			sinon.stub(SimpleModel.prototype, 'createIndexes')
+			sinon.stub(SimpleModel.prototype, 'createIndex')
 				.resolves(true);
 
 			sinon.spy(SimpleCoreModel.prototype, 'getIndexes');
 
-			sinon.spy(SimpleCoreModel.prototype, 'dropIndexes');
+			sinon.spy(SimpleCoreModel.prototype, 'dropIndex');
 
-			sinon.spy(SimpleCoreModel.prototype, 'createIndexes');
+			sinon.spy(SimpleCoreModel.prototype, 'createIndex');
 
 			await executeForCode('the-client-code');
 
-			sinon.assert.notCalled(SimpleModel.prototype.dropIndexes);
+			sinon.assert.notCalled(SimpleModel.prototype.dropIndex);
 
-			sinon.assert.calledOnceWithExactly(SimpleModel.prototype.createIndexes, [{
+			sinon.assert.calledOnceWithExactly(SimpleModel.prototype.createIndex, {
 				name: 'field',
 				key: { field: 1 }
-			}]);
+			});
 
 			sinon.assert.notCalled(SimpleCoreModel.prototype.getIndexes);
-			sinon.assert.notCalled(SimpleCoreModel.prototype.createIndexes);
-			sinon.assert.notCalled(SimpleCoreModel.prototype.dropIndexes);
+			sinon.assert.notCalled(SimpleCoreModel.prototype.createIndex);
+			sinon.assert.notCalled(SimpleCoreModel.prototype.dropIndex);
 
 		});
 
-		context('when createIndexes fails for some indexes', () => {
+		context('when createIndex fails for some indexes', () => {
 			it('should log the result and continue without rejecting', async () => {
 
 				loadClient();
@@ -308,10 +303,10 @@ describe('MongodbIndexCreator - Client Indexes', () => {
 						key: { otherBadIndex: 1 }
 					}]);
 
-				sinon.stub(SimpleModel.prototype, 'dropIndexes')
+				sinon.stub(SimpleModel.prototype, 'dropIndex')
 					.resolves(true);
 
-				sinon.stub(SimpleModel.prototype, 'createIndexes')
+				sinon.stub(SimpleModel.prototype, 'createIndex')
 					.rejects('Some error');
 
 				sinon.stub(CompleteModel.prototype, 'getIndexes')
@@ -320,43 +315,47 @@ describe('MongodbIndexCreator - Client Indexes', () => {
 						key: { oldIndex: 1 }
 					}]);
 
-				sinon.stub(CompleteModel.prototype, 'dropIndexes')
+				sinon.stub(CompleteModel.prototype, 'dropIndex')
 					.resolves(true);
 
-				sinon.stub(CompleteModel.prototype, 'createIndexes')
+				sinon.stub(CompleteModel.prototype, 'createIndex')
 					.resolves(true);
 
 				await execute();
 
-				sinon.assert.calledOnceWithExactly(SimpleModel.prototype.dropIndexes, ['badIndex', 'otherBadIndex']);
+				sinon.assert.calledWith(SimpleModel.prototype.dropIndex, 'badIndex');
+				sinon.assert.calledWith(SimpleModel.prototype.dropIndex, 'otherBadIndex');
+				sinon.assert.calledTwice(SimpleModel.prototype.dropIndex);
 
-				sinon.assert.calledOnceWithExactly(SimpleModel.prototype.createIndexes, [{
+				sinon.assert.calledOnceWithExactly(SimpleModel.prototype.createIndex, {
 					name: 'field',
 					key: { field: 1 }
-				}]);
+				});
 
-				sinon.assert.calledOnceWithExactly(CompleteModel.prototype.dropIndexes, ['oldIndex']);
+				sinon.assert.calledOnceWithExactly(CompleteModel.prototype.dropIndex, 'oldIndex');
 
-				sinon.assert.calledOnceWithExactly(CompleteModel.prototype.createIndexes, [{
+				sinon.assert.calledWith(CompleteModel.prototype.createIndex, {
 					name: 'field',
 					key: { field: 1 }
-				}, {
+				});
+
+				sinon.assert.calledWith(CompleteModel.prototype.createIndex, {
 					name: 'foo_bar_unique',
 					key: { foo: 1, bar: 1 },
 					unique: true
-				}]);
+				});
+
+				sinon.assert.calledTwice(CompleteModel.prototype.createIndex);
 
 				assert.deepStrictEqual(Results.results, {
 					'the-client-code': {
-						[SimpleModel.prototype.databaseKey]: {
-							[SimpleModel.table]: {
-								collectionFailed: ['field'],
-								dropped: ['badIndex', 'otherBadIndex']
-							},
-							[CompleteModel.table]: {
-								created: ['field', 'foo_bar_unique'],
-								dropped: ['oldIndex']
-							}
+						[SimpleModel.table]: {
+							error: ['field'],
+							dropped: ['badIndex', 'otherBadIndex']
+						},
+						[CompleteModel.table]: {
+							created: ['field', 'foo_bar_unique'],
+							dropped: ['oldIndex']
 						}
 					}
 				});
@@ -376,14 +375,14 @@ describe('MongodbIndexCreator - Client Indexes', () => {
 			mockModel(sinon, { 'simple.js': SimpleModel });
 
 			sinon.stub(SimpleModel.prototype, 'getIndexes');
-			sinon.stub(SimpleModel.prototype, 'dropIndexes');
-			sinon.stub(SimpleModel.prototype, 'createIndexes');
+			sinon.stub(SimpleModel.prototype, 'dropIndex');
+			sinon.stub(SimpleModel.prototype, 'createIndex');
 
 			await executeForCode('the-client-code');
 
 			sinon.assert.notCalled(SimpleModel.prototype.getIndexes);
-			sinon.assert.notCalled(SimpleModel.prototype.createIndexes);
-			sinon.assert.notCalled(SimpleModel.prototype.dropIndexes);
+			sinon.assert.notCalled(SimpleModel.prototype.createIndex);
+			sinon.assert.notCalled(SimpleModel.prototype.dropIndex);
 		});
 	});
 
@@ -398,14 +397,14 @@ describe('MongodbIndexCreator - Client Indexes', () => {
 			mockModel(sinon, { 'simple.js': SimpleModel });
 
 			sinon.stub(SimpleModel.prototype, 'getIndexes');
-			sinon.stub(SimpleModel.prototype, 'dropIndexes');
-			sinon.stub(SimpleModel.prototype, 'createIndexes');
+			sinon.stub(SimpleModel.prototype, 'dropIndex');
+			sinon.stub(SimpleModel.prototype, 'createIndex');
 
 			await execute();
 
 			sinon.assert.notCalled(SimpleModel.prototype.getIndexes);
-			sinon.assert.notCalled(SimpleModel.prototype.createIndexes);
-			sinon.assert.notCalled(SimpleModel.prototype.dropIndexes);
+			sinon.assert.notCalled(SimpleModel.prototype.createIndex);
+			sinon.assert.notCalled(SimpleModel.prototype.dropIndex);
 		});
 	});
 });

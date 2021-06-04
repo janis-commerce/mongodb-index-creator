@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.3.3] - 2021-06-04
+### Changed
+- `dropIndex` and `createIndex` are called individually to avoid complete failures when not necessary
+
 ## [2.3.2] - 2021-06-04
 ### Fixed
 - Fixed `unique: false` and `sparse: false` in model definition scenarios
