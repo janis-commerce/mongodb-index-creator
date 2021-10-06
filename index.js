@@ -19,9 +19,6 @@ const MongodbIndexCreator = require('./lib/mongodb-index-creator');
 		process.exit(0);
 
 	} catch(err) {
-
-		logger.error(err.message);
-
-		process.exit(1);
-	}
+		throw new MongodbIndexCreatorError( err.message, err.code);
+		}
 })();
