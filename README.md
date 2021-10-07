@@ -131,3 +131,7 @@ module.exports = helper({
 	]
 });
 ```
+
+## :warning: IMPORTANT
+
+If an error occurs either while deleting previous indexes or creating new ones, an error will be thrown aborting the index creation. 
