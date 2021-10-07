@@ -237,7 +237,7 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 		});
 
 		context('when createIndex fails', () => {
-			it('should throw an error and abort creation', async () => {
+			it('should throw an error with CREATE INDEX ERROR code, and abort creation', async () => {
 
 				mockModel(sinon, { 'simple.js': SimpleModel });
 
@@ -272,7 +272,7 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 		});
 
 		context('when dropIndex fails', () => {
-			it('should reject with a DROP INDEX ERROR code', async () => {
+			it('should throw an error with a DROP INDEX ERROR code, and abort process', async () => {
 
 				mockModel(sinon, { 'simple.js': SimpleModel });
 

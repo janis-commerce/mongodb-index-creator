@@ -289,7 +289,7 @@ describe('MongodbIndexCreator - Client Indexes', () => {
 		});
 
 		context('when createIndex fails for some indexes', () => {
-			it('should reject with a INDEX CREATE ERROR code', async () => {
+			it('should throw an error with a CREATE INDEX ERROR code', async () => {
 
 				loadClient();
 
