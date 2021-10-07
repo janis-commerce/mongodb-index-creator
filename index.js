@@ -5,6 +5,7 @@
 const logger = require('./lib/colorful-lllog')();
 
 const MongodbIndexCreator = require('./lib/mongodb-index-creator');
+const MongodbIndexCreatorError = require('./lib/mongodb-index-creator-error');
 
 (async () => {
 
@@ -19,6 +20,6 @@ const MongodbIndexCreator = require('./lib/mongodb-index-creator');
 		process.exit(0);
 
 	} catch(err) {
-		throw new MongodbIndexCreatorError( err.message, err.code);
-		}
+		throw new MongodbIndexCreatorError(err.message, err.code);
+	}
 })();
