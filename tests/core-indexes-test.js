@@ -287,7 +287,7 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 
 				sinon.spy(SimpleModel.prototype, 'createIndex');
 
-				await assert.rejects(() => execute(), {
+				await assert.rejects(execute(), {
 					code: MongodbIndexCreatorError.codes.DROP_INDEX_ERROR
 				});
 
@@ -359,9 +359,7 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 				sinon.stub(InvalidIndexesModel.prototype, 'createIndex')
 					.resolves(true);
 
-				await assert.rejects(execute(), {
-					code: MongodbIndexCreatorError.codes.CREATE_INDEX_ERROR
-				});
+				await assert.rejects(execute(), { code: MongodbIndexCreatorError.codes.INVALID_INDEXES });
 
 				sinon.assert.notCalled(InvalidIndexesModel.prototype.getIndexes);
 				sinon.assert.notCalled(InvalidIndexesModel.prototype.dropIndex);
