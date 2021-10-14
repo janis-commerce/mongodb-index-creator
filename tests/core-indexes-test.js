@@ -250,7 +250,7 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 				sinon.stub(SimpleModel.prototype, 'createIndex')
 					.rejects('Some error');
 
-				await assert.rejects(() => execute(), {
+				await assert.rejects(execute(), {
 					code: MongodbIndexCreatorError.codes.CREATE_INDEX_ERROR
 				});
 

@@ -322,7 +322,7 @@ describe('MongodbIndexCreator - Client Indexes', () => {
 				sinon.stub(CompleteModel.prototype, 'createIndex')
 					.resolves(true);
 
-				await assert.rejects(() => execute(), {
+				await assert.rejects(execute(), {
 					code: MongodbIndexCreatorError.codes.CREATE_INDEX_ERROR
 				});
 

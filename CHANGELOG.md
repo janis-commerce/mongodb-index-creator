@@ -6,8 +6,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-### Changed
-- Logs for throwing error in create and drop indexes methods
+### Added
+- Error throwing in create and drop indexes methods
 ## [2.3.3] - 2021-06-04
 ### Changed
 - `dropIndex` and `createIndex` are called individually to avoid complete failures when not necessary
