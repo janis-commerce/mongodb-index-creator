@@ -19,6 +19,7 @@ const SimpleCoreModel = require('./models/core/simple');
 const mockModel = require('./models/mock-model');
 
 const defaultIndex = require('./default-index.json');
+const MongodbIndexCreatorError = require('../lib/mongodb-index-creator-error');
 
 require('../lib/colorful-lllog')('none');
 
@@ -288,7 +289,7 @@ describe('MongodbIndexCreator - Client Indexes', () => {
 		});
 
 		context('when createIndex fails for some indexes', () => {
-			it('should log the result and continue without rejecting', async () => {
+			it('should throw an error with a CREATE INDEX ERROR code', async () => {
 
 				loadClient();
 
@@ -321,7 +322,9 @@ describe('MongodbIndexCreator - Client Indexes', () => {
 				sinon.stub(CompleteModel.prototype, 'createIndex')
 					.resolves(true);
 
-				await execute();
+				await assert.rejects(execute(), {
+					code: MongodbIndexCreatorError.codes.CREATE_INDEX_ERROR
+				});
 
 				sinon.assert.calledWith(SimpleModel.prototype.dropIndex, 'badIndex');
 				sinon.assert.calledWith(SimpleModel.prototype.dropIndex, 'otherBadIndex');

@@ -10,18 +10,10 @@ const MongodbIndexCreator = require('./lib/mongodb-index-creator');
 
 	const mongodbIndexCreator = new MongodbIndexCreator();
 
-	try {
+	await mongodbIndexCreator.execute();
 
-		await mongodbIndexCreator.execute();
+	logger.info('Operation completed successfully.');
 
-		logger.info('Operation completed successfully.');
+	process.exit(0);
 
-		process.exit(0);
-
-	} catch(err) {
-
-		logger.error(err.message);
-
-		process.exit(1);
-	}
 })();

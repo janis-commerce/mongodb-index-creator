@@ -20,6 +20,7 @@ const invalidIndexesModelGenerator = require('./models/core/invalid-indexes');
 const mockModel = require('./models/mock-model');
 
 const defaultIndex = require('./default-index.json');
+const MongodbIndexCreatorError = require('../lib/mongodb-index-creator-error');
 
 require('../lib/colorful-lllog')('none');
 
@@ -236,7 +237,7 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 		});
 
 		context('when createIndex fails', () => {
-			it('should log the result and continue without rejecting', async () => {
+			it('should throw an error with CREATE INDEX ERROR code, and abort creation', async () => {
 
 				mockModel(sinon, { 'simple.js': SimpleModel });
 
@@ -249,7 +250,9 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 				sinon.stub(SimpleModel.prototype, 'createIndex')
 					.rejects('Some error');
 
-				await execute();
+				await assert.rejects(execute(), {
+					code: MongodbIndexCreatorError.codes.CREATE_INDEX_ERROR
+				});
 
 				sinon.assert.notCalled(SimpleModel.prototype.dropIndex);
 
@@ -269,7 +272,7 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 		});
 
 		context('when dropIndex fails', () => {
-			it('should log the result and continue without rejecting', async () => {
+			it('should throw an error with a DROP INDEX ERROR code, and abort process', async () => {
 
 				mockModel(sinon, { 'simple.js': SimpleModel });
 
@@ -282,23 +285,19 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 				sinon.stub(SimpleModel.prototype, 'dropIndex')
 					.rejects('Some error');
 
-				sinon.stub(SimpleModel.prototype, 'createIndex')
-					.resolves(true);
+				sinon.spy(SimpleModel.prototype, 'createIndex');
 
-				await execute();
+				await assert.rejects(execute(), {
+					code: MongodbIndexCreatorError.codes.DROP_INDEX_ERROR
+				});
 
 				sinon.assert.calledOnceWithExactly(SimpleModel.prototype.dropIndex, 'otherField');
 
-				sinon.assert.calledOnceWithExactly(SimpleModel.prototype.createIndex, {
-					name: 'field',
-					key: { field: 1 }
-				});
-
+				sinon.assert.notCalled(SimpleModel.prototype.createIndex);
 				assert.deepStrictEqual(Results.results, {
 					[SimpleModel.prototype.databaseKey]: {
 						[SimpleModel.table]: {
-							error: ['otherField'],
-							created: ['field']
+							error: ['otherField']
 						}
 					}
 				});
@@ -360,7 +359,7 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 				sinon.stub(InvalidIndexesModel.prototype, 'createIndex')
 					.resolves(true);
 
-				await execute();
+				await assert.rejects(execute(), { code: MongodbIndexCreatorError.codes.INVALID_INDEXES });
 
 				sinon.assert.notCalled(InvalidIndexesModel.prototype.getIndexes);
 				sinon.assert.notCalled(InvalidIndexesModel.prototype.dropIndex);
