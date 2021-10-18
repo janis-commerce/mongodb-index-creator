@@ -10,16 +10,17 @@ A package to create MongoDB Indexes for databases collections
 ```sh
 npm install @janiscommerce/mongodb-index-creator
 ```
-## :warning: Important Change
+
+## :warning: Important Change since _2.4.0_
 - Now if an error occurs either while deleting previous indexes or creating new ones, an Exception will be thrown aborting the index creation.
- 
+
 ## Big Changes in _2.0.0_
 - Now we use `@janiscommerce/model@^5.x.x` with all the new features of that magic package.
 - Now the index are located in each Model and are obtained with the `indexes` static _getter_.
 - Now it's possible to drop all the indexes removing the `indexes` static _getter_.
 
 ## Configuration
-This package uses models for mantain indexes, creating or dropping if needs.
+This package uses models for maintain indexes, creating or dropping if needs.
 
 If you need more information about how to configure a model, please check the following docs: [@janiscommerce/model](https://www.npmjs.com/package/@janiscommerce/model)
 

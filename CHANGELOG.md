@@ -6,8 +6,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.4.0] - 2021-10-18
 ### Added
 - Error throwing in create and drop indexes methods
+
 ## [2.3.3] - 2021-06-04
 ### Changed
 - `dropIndex` and `createIndex` are called individually to avoid complete failures when not necessary
@@ -23,9 +26,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [2.3.0] - 2021-02-08
 ### Added
 - Detect the index has changed when change the properties `key`, `unique`, `expireAfterSeconds`, `partialFilterExpression`, `sparse`
-- Drop and create the indexes separately to avoid operation collisions 
+- Drop and create the indexes separately to avoid operation collisions
 - Optimized code using the last version of @janiscommerce/api-session with 'offline' client injection
-- Index struct validation errors will be shown in output 
+- Index struct validation errors will be shown in output
 
 ## [2.2.3] - 2020-09-03
 ### Changed
