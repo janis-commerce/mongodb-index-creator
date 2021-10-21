@@ -40,7 +40,7 @@
   },
   "dependencies": {
     "@janiscommerce/api-session": "^3.1.1",
-    "@janiscommerce/model": "^5.6.0",
+    "@janiscommerce/model": "^5.6.3",
     "@janiscommerce/settings": "^1.0.1",
     "lllog": "^1.1.2",
     "superstruct": "0.6.1"
