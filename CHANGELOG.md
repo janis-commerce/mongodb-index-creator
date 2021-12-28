@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.4.2] - 2021-12-28
+### Changed
+- Changed generic `superstruct` dependency for JanisCommerce version
+
 ## [2.4.1] - 2021-10-21
 ### Added
 - Force to exit _process_ with error when error occurs
