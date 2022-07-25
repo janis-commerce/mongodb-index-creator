@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.5.0] - 2022-07-25
+### Changed
+- Errors while creating or dropping indexes will no throw an Exception anymore
+
 ## [2.4.2] - 2021-12-28
 ### Changed
 - Changed generic `superstruct` dependency for JanisCommerce version
