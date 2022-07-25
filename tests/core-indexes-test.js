@@ -237,12 +237,15 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 		});
 
 		context('when createIndex fails', () => {
-			it('should throw an error with CREATE INDEX ERROR code, and abort creation', async () => {
+			it('should not rejects and continue the process', async () => {
 
 				mockModel(sinon, { 'simple.js': SimpleModel });
 
 				sinon.stub(SimpleModel.prototype, 'getIndexes')
-					.resolves([defaultIndex]);
+					.resolves([defaultIndex, {
+						name: 'otherField',
+						key: { otherField: 1 }
+					}]);
 
 				sinon.stub(SimpleModel.prototype, 'dropIndex')
 					.resolves(true);
@@ -250,11 +253,9 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 				sinon.stub(SimpleModel.prototype, 'createIndex')
 					.rejects('Some error');
 
-				await assert.rejects(execute(), {
-					code: MongodbIndexCreatorError.codes.CREATE_INDEX_ERROR
-				});
+				await execute();
 
-				sinon.assert.notCalled(SimpleModel.prototype.dropIndex);
+				sinon.assert.calledOnceWithExactly(SimpleModel.prototype.dropIndex, 'otherField');
 
 				sinon.assert.calledOnceWithExactly(SimpleModel.prototype.createIndex, {
 					name: 'field',
@@ -264,7 +265,8 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 				assert.deepStrictEqual(Results.results, {
 					[SimpleModel.prototype.databaseKey]: {
 						[SimpleModel.table]: {
-							error: ['field']
+							createError: ['field'],
+							dropped: ['otherField']
 						}
 					}
 				});
@@ -272,7 +274,7 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 		});
 
 		context('when dropIndex fails', () => {
-			it('should throw an error with a DROP INDEX ERROR code, and abort process', async () => {
+			it('should not rejects and continue the process', async () => {
 
 				mockModel(sinon, { 'simple.js': SimpleModel });
 
@@ -285,19 +287,23 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 				sinon.stub(SimpleModel.prototype, 'dropIndex')
 					.rejects('Some error');
 
-				sinon.spy(SimpleModel.prototype, 'createIndex');
+				sinon.stub(SimpleModel.prototype, 'createIndex')
+					.resolves(true);
 
-				await assert.rejects(execute(), {
-					code: MongodbIndexCreatorError.codes.DROP_INDEX_ERROR
-				});
+				await execute();
 
 				sinon.assert.calledOnceWithExactly(SimpleModel.prototype.dropIndex, 'otherField');
 
-				sinon.assert.notCalled(SimpleModel.prototype.createIndex);
+				sinon.assert.calledOnceWithExactly(SimpleModel.prototype.createIndex, {
+					name: 'field',
+					key: { field: 1 }
+				});
+
 				assert.deepStrictEqual(Results.results, {
 					[SimpleModel.prototype.databaseKey]: {
 						[SimpleModel.table]: {
-							error: ['otherField']
+							dropError: ['otherField'],
+							created: ['field']
 						}
 					}
 				});
