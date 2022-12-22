@@ -1,13 +1,15 @@
 'use strict';
 
-const assert = require('assert');
-
 const sinon = require('sinon');
 const mockRequire = require('mock-require');
 
+const { Handler } = require('@janiscommerce/lambda');
+
 const Settings = require('@janiscommerce/settings');
-const MongodbIndexCreator = require('../lib/mongodb-index-creator');
-const { Client, Results } = require('../lib/helpers');
+
+const { MongoDBIndexCreator } = require('../lib');
+
+const { Client } = require('../lib/helpers');
 
 const ClientModel = require('./models/client/client');
 const SimpleModel = require('./models/client/simple');
@@ -20,7 +22,7 @@ const mockModel = require('./models/mock-model');
 
 const defaultIndex = require('./default-index.json');
 
-require('../lib/colorful-lllog')('none');
+require('lllog')('none');
 
 const fakeDBSettings = {
 	core: { write: {} }
@@ -36,7 +38,6 @@ describe('MongodbIndexCreator - Client Indexes', () => {
 	afterEach(() => {
 		sinon.restore();
 		mockRequire.stopAll();
-		Results.results = null;
 	});
 
 	const loadClient = () => {
@@ -64,13 +65,12 @@ describe('MongodbIndexCreator - Client Indexes', () => {
 	};
 
 	const execute = () => {
-		const mongodbIndexCreator = new MongodbIndexCreator();
-		return mongodbIndexCreator.executeForClientDatabases();
+		return Handler.handle(MongoDBIndexCreator);
 	};
 
-	const executeForCode = code => {
-		const mongodbIndexCreator = new MongodbIndexCreator();
-		return mongodbIndexCreator.executeForClientCode(code);
+	const executeForCode = clientCode => {
+		return Handler.handle(MongoDBIndexCreator, { body: { clientCode } });
+
 	};
 
 	context('when valid indexes found in models', () => {
@@ -148,14 +148,6 @@ describe('MongodbIndexCreator - Client Indexes', () => {
 				name: 'field',
 				key: { field: 1 }
 			});
-
-			assert.deepStrictEqual(Results.results, {
-				'the-client-code': {
-					[SimpleModel.table]: {
-						created: ['field']
-					}
-				}
-			});
 		});
 
 		it('should create and drop index if found the index but changes and save results', async () => {
@@ -187,15 +179,6 @@ describe('MongodbIndexCreator - Client Indexes', () => {
 			sinon.assert.calledOnceWithExactly(SimpleModel.prototype.createIndex, {
 				name: 'field',
 				key: { field: 1 }
-			});
-
-			assert.deepStrictEqual(Results.results, {
-				'the-client-code': {
-					[SimpleModel.table]: {
-						created: ['field'],
-						dropped: ['field']
-					}
-				}
 			});
 		});
 
@@ -346,19 +329,6 @@ describe('MongodbIndexCreator - Client Indexes', () => {
 				});
 
 				sinon.assert.calledTwice(CompleteModel.prototype.createIndex);
-
-				assert.deepStrictEqual(Results.results, {
-					'the-client-code': {
-						[SimpleModel.table]: {
-							createError: ['field'],
-							dropped: ['badIndex', 'otherBadIndex']
-						},
-						[CompleteModel.table]: {
-							created: ['field', 'foo_bar_unique'],
-							dropped: ['oldIndex']
-						}
-					}
-				});
 			});
 		});
 

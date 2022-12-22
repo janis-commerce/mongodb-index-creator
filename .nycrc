@@ -1,7 +1,6 @@
 {
   "include": [
-    "lib/",
-    "index.js"
+    "lib/"
   ],
   "extension": [
     ".js"
@@ -12,7 +11,7 @@
   "check-coverage": true,
   "skip-full": true,
   "statements": 100,
-  "branches": 95,
+  "branches": 94,
   "functions": 100,
   "lines": 100
 }

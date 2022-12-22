@@ -5,12 +5,13 @@ const assert = require('assert');
 const sinon = require('sinon');
 const mockRequire = require('mock-require');
 
+const { Handler } = require('@janiscommerce/lambda');
+
 const Model = require('@janiscommerce/model');
 
 const Settings = require('@janiscommerce/settings');
-const MongodbIndexCreator = require('../lib/mongodb-index-creator');
 
-const { Results } = require('../lib/helpers');
+const { MongoDBIndexCreator } = require('../lib');
 
 const SimpleModel = require('./models/core/simple');
 const EmptyModel = require('./models/core/empty');
@@ -22,7 +23,7 @@ const mockModel = require('./models/mock-model');
 const defaultIndex = require('./default-index.json');
 const MongodbIndexCreatorError = require('../lib/mongodb-index-creator-error');
 
-require('../lib/colorful-lllog')('none');
+require('lllog')('none');
 
 const fakeDBSettings = {
 	core: { write: {} }
@@ -38,12 +39,10 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 	afterEach(() => {
 		sinon.restore();
 		mockRequire.stopAll();
-		Results.results = null;
 	});
 
 	const execute = () => {
-		const mongodbIndexCreator = new MongodbIndexCreator();
-		return mongodbIndexCreator.execute();
+		return Handler.handle(MongoDBIndexCreator);
 	};
 
 	context('when valid indexes found in models', () => {
@@ -165,15 +164,6 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 				name: 'field',
 				key: { field: 1 }
 			});
-
-			assert.deepStrictEqual(Results.results, {
-				[SimpleModel.prototype.databaseKey]: {
-					[SimpleModel.table]: {
-						dropped: ['oldIndex', 'veryOldIndex'],
-						created: ['field']
-					}
-				}
-			});
 		});
 
 		it('should create and drop indexes and if fails should save result', async () => {
@@ -199,15 +189,6 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 			sinon.assert.calledOnceWithExactly(SimpleModel.prototype.createIndex, {
 				name: 'field',
 				key: { field: 1 }
-			});
-
-			assert.deepStrictEqual(Results.results, {
-				[SimpleModel.prototype.databaseKey]: {
-					[SimpleModel.table]: {
-						dropFailed: ['oldIndex'],
-						createFailed: ['field']
-					}
-				}
 			});
 		});
 
@@ -261,15 +242,6 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 					name: 'field',
 					key: { field: 1 }
 				});
-
-				assert.deepStrictEqual(Results.results, {
-					[SimpleModel.prototype.databaseKey]: {
-						[SimpleModel.table]: {
-							createError: ['field'],
-							dropped: ['otherField']
-						}
-					}
-				});
 			});
 		});
 
@@ -297,15 +269,6 @@ describe('MongodbIndexCreator - Core Indexes', () => {
 				sinon.assert.calledOnceWithExactly(SimpleModel.prototype.createIndex, {
 					name: 'field',
 					key: { field: 1 }
-				});
-
-				assert.deepStrictEqual(Results.results, {
-					[SimpleModel.prototype.databaseKey]: {
-						[SimpleModel.table]: {
-							dropError: ['otherField'],
-							created: ['field']
-						}
-					}
 				});
 			});
 		});

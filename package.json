@@ -1,17 +1,14 @@
 {
   "name": "@janiscommerce/mongodb-index-creator",
   "version": "2.5.0",
-  "description": "A package for build MongoDB indexes",
-  "main": "lib/mongodb-index-creator.js",
-  "bin": {
-    "mongodb-index-creator": "index.js"
-  },
+  "description": "A package to create MongoDB indexes using Janis Models",
+  "main": "lib/index.js",
   "scripts": {
     "test": "export TEST_ENV=true; mocha --exit -R nyan --recursive tests/",
     "test-ci": "nyc --reporter=lcov --reporter=text-summary mocha --exit --recursive tests/",
     "watch-test": "export TEST_ENV=true; mocha --exit -R nyan -w --recursive tests/",
     "coverage": "nyc npm test",
-    "lint": "eslint index.js lib/ tests/",
+    "lint": "eslint lib/ tests/",
     "prepare": "husky install"
   },
   "repository": {
@@ -22,16 +19,16 @@
   "license": "ISC",
   "homepage": "https://github.com/janis-commerce/mongodb-index-creator.git#readme",
   "devDependencies": {
-    "@janiscommerce/model": "^6.6.2",
-    "eslint": "^7.32.0",
+    "@janiscommerce/model": "^6.8.2",
+    "eslint": "^8.30.0",
     "eslint-config-airbnb-base": "^13.2.0",
-    "eslint-plugin-import": "^2.25.2",
-    "husky": "^8.0.1",
-    "mocha": "^9.2.2",
-    "mock-fs": "^4.13.0",
+    "eslint-plugin-import": "^2.26.0",
+    "husky": "^8.0.2",
+    "mocha": "^10.2.0",
+    "mock-fs": "^4.14.0",
     "mock-require": "^3.0.3",
     "nyc": "^15.1.0",
-    "sinon": "^11.1.2"
+    "sinon": "^15.0.1"
   },
   "files": [
     "lib/"
@@ -41,8 +38,9 @@
   },
   "dependencies": {
     "@janiscommerce/api-session": "^3.3.1",
+    "@janiscommerce/lambda": "^4.1.1",
     "@janiscommerce/settings": "^1.0.1",
-    "@janiscommerce/superstruct": "^1.2.0",
+    "@janiscommerce/superstruct": "^1.2.1",
     "lllog": "^1.1.2"
   }
 }
