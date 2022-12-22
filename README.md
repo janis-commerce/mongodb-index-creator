@@ -6,15 +6,49 @@
 
 A package to create MongoDB Indexes for databases collections
 
-## Installation
+## :inbox_tray: Installation
 ```sh
 npm install @janiscommerce/mongodb-index-creator
 ```
 
-## :warning: Important Change since _2.5.0_
-- Now if an error occurs either while dropping indexes or creating new ones, the process will be continue a report errors in the end of the process.
+## :warning: Breaking Change since `3.0.0`
+The package exports **MongoDBIndexCreator** class to be handled with [@janiscommerce/lambda](https://www.npmjs.com/package/@janiscommerce/lambda).
 
-## Configuration
+See **Configuration** section below.
+
+## :hammer_and_wrench: Configuration
+
+At `src/lambda/MongoDBIndexCreator/index.js`
+
+```js
+'use strict';
+
+const { Handler } = require('@janiscommerce/lambda');
+
+const { MongoDBIndexCreator } = require('@janiscommerce/mongodb-index-creator');
+
+module.exports.handler = (...args) => Handler.handle(MongoDBIndexCreator, ...args);
+
+```
+
+At a `serverless.js` file:
+
+```js
+'use strict';
+
+const { helper } = require('sls-helper'); // eslint-disable-line
+const { serverlessFunction } =  require('@janiscommerce/mongodb-index-creator');
+
+module.exports = helper({
+	hooks: [
+		// other hooks
+		...serverlessFunction
+	]
+});
+
+```
+
+## Indexes configuration
 This package uses models for maintain indexes, creating or dropping if needs.
 
 If you need more information about how to configure a model, please check the following docs: [@janiscommerce/model](https://www.npmjs.com/package/@janiscommerce/model)
@@ -59,73 +93,21 @@ partialFilterExpression: 'object?' # optional
 
 For more information see [MongoDB Indexes](https://docs.mongodb.com/manual/indexes/)
 
-## Running the utility
-
-Is possible to run the package using npx or as module using the API public methods.
-
-### Usage without installation
-```sh
-npx @janiscommerce/mongodb-index-creator
-```
-
-### Usage (as module)
-```js
-const MongodbIndexCreator = require('@janiscommerce/mongodb-index-creator');
-```
-
-## API
-
-### **`new mongodbIndexCreator()`**
-
-Constructs the MongodbIndexCreator instance.
-
-### **`async execute()`**
-
-Run the utility for all models found in the models path.
-
-### **`async executeForClientDatabases()`**
-
-Run the utility for client models found in the models path.
-
-### **`async executeForClientCode(clientCode)`**
-
-Run the utility for client models found in the models path, but only for the client provided.
-
-### **`async get serverlessFunction`**
-Returns an array that contains the serverless function that can be use at the service `serverless.js` file.
-
 ## Examples
 
 ```js
-const MongodbIndexCreator = require('@janiscommerce/mongodb-index-creator');
-
-const mongodbIndexCreator = new MongodbIndexCreator();
+const { Invoker } = require('@janiscommerce/lambda');
 
 (async () => {
 
-	// execute for core and client databases
-	await mongodbIndexCreator.execute();
-
-	// execute for client databases
-	await mongodbIndexCreator.executeForClientDatabases();
+	// execute for core and all clients databases
+	await Invoker.call('MongoDBIndexCreator');
 
 	// execute for specified client
-	await mongodbIndexCreator.executeForClientCode('some-client');
+	await Invoker.call('MongoDBIndexCreator', { clientCode: 'some-client' });
+
+	// execute for multiple clients
+	await Invoker.call('MongoDBIndexCreator', { clientCode: ['some-client', 'other-client'] });
 
 })();
-```
-
-At a serverless.js file:
-```js
-'use strict';
-
-const { helper } = require('sls-helper'); // eslint-disable-line
-const { MongodbIndexCreator } =  require('@janiscommerce/mongodb-index-creator');
-
-module.exports = helper({
-	hooks: [
-		// other hooks
-		...MongodbIndexCreator.serverlessFunction
-	]
-});
 ```
