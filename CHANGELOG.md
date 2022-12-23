@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [3.0.1] - 2022-12-23
+### Fixed
+- Fixed client received by payload
+
+### Changed
+- Improved `README.md` to be easier to implement
+
 ## [3.0.0] - 2022-12-22
 ### Changed
 - **MongoDBIndexCreator** must be used as a class to be handled with [@janiscommerce/lambda](https://www.npmjs.com/package/@janiscommerce/lambda).

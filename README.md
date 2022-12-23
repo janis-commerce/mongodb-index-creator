@@ -18,7 +18,10 @@ See **Configuration** section below.
 
 ## :hammer_and_wrench: Configuration
 
-At `src/lambda/MongoDBIndexCreator/index.js`
+### Lambda function
+
+<details>
+	<summary>Adding the lambda function at <tt>src/lambda/MongoDBIndexCreator/index.js</tt></summary>
 
 ```js
 'use strict';
@@ -30,8 +33,12 @@ const { MongoDBIndexCreator } = require('@janiscommerce/mongodb-index-creator');
 module.exports.handler = (...args) => Handler.handle(MongoDBIndexCreator, ...args);
 
 ```
+</details>
 
-At a `serverless.js` file:
+### Lambda function hook
+
+<details>
+	<summary>Register the lambda function at <tt>serverless.js</tt> file</summary>
 
 ```js
 'use strict';
@@ -47,6 +54,54 @@ module.exports = helper({
 });
 
 ```
+</details>
+
+### Lambda function tests
+
+<details>
+	<summary>Add tests for the function added <tt>tests/lambda/MongoDBIndexCreator/index.js</tt></summary>
+
+```js
+'use strict';
+
+const sinon = require('sinon');
+
+const { Handler } = require('@janiscommerce/lambda');
+
+const { MongoDBIndexCreator } = require('@janiscommerce/mongodb-index-creator');
+
+const { handler: FunctionHandler } = require('../../../src/lambda/MongoDBIndexCreator');
+
+describe('MongoDBIndexCreator', () => {
+
+	beforeEach(() => sinon.stub(Handler, 'handle').resolves());
+
+	afterEach(() => sinon.restore());
+
+	it('Should handle with lambda handler when no payload was received', async () => {
+
+		await FunctionHandler();
+
+		sinon.assert.calledOnceWithExactly(Handler.handle, MongoDBIndexCreator);
+	});
+
+	it('Should handle with lambda handler when a client was received in payload', async () => {
+
+		await FunctionHandler({ clientCode: 'my-client' });
+
+		sinon.assert.calledOnceWithExactly(Handler.handle, MongoDBIndexCreator, { clientCode: 'my-client' });
+	});
+
+	it('Should handle with lambda handler when multiple client was received in payload', async () => {
+
+		await FunctionHandler({ clientCode: ['my-client', 'other-client'] });
+
+		sinon.assert.calledOnceWithExactly(Handler.handle, MongoDBIndexCreator, { clientCode: ['my-client', 'other-client'] });
+	});
+});
+
+```
+</details>
 
 ## Indexes configuration
 This package uses models for maintain indexes, creating or dropping if needs.
