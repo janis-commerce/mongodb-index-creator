@@ -11,4 +11,8 @@ module.exports = class ClientModel extends Model {
 	static get table() {
 		return 'clients';
 	}
+
+	isCore() {
+		return true;
+	}
 };

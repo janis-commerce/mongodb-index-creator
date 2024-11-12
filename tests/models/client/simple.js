@@ -18,4 +18,8 @@ module.exports = class SimpleModel extends Model {
 			key: { field: 1 }
 		}];
 	}
+
+	isCore() {
+		return false;
+	}
 };

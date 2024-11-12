@@ -11,4 +11,8 @@ module.exports = class EmptyCoreModel extends Model {
 	static get table() {
 		return 'empty';
 	}
+
+	isCore() {
+		return true;
+	}
 };

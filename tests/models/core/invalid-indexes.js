@@ -18,6 +18,8 @@ module.exports = indexes => {
 			return indexes;
 		}
 
+		isCore() {
+			return true;
+		}
 	};
-
 };

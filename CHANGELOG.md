@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [4.1.0-beta.0] - 2024-11-12
+### Changed
+- Indexes queries optimization
+- Updated `@janiscommerce` dependencies
+- _Internal_ Using `node@18`
+- _Internal_ GitHub actions improved
+
 ## [4.0.0] - 2023-04-18
 ### Changed
 - Update [@janiscommerce/model](https://www.npmjs.com/package/@janiscommerce/model) that use AWS SDK v3

@@ -22,4 +22,8 @@ module.exports = class CompleteModel extends Model {
 			unique: true
 		}];
 	}
+
+	isCore() {
+		return false;
+	}
 };

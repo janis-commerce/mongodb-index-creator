@@ -9,8 +9,6 @@ const { Handler } = require('@janiscommerce/lambda');
 
 const Model = require('@janiscommerce/model');
 
-const Settings = require('@janiscommerce/settings');
-
 const { MongoDBIndexCreator } = require('../lib');
 
 const {
@@ -31,16 +29,7 @@ const MongodbIndexCreatorError = require('../lib/mongodb-index-creator-error');
 
 require('lllog')('none');
 
-const fakeDBSettings = {
-	core: { write: {} }
-};
-
 describe('MongodbIndexCreator', () => {
-
-	beforeEach(() => {
-		sinon.stub(Settings, 'get')
-			.returns(fakeDBSettings);
-	});
 
 	afterEach(() => {
 		sinon.restore();
@@ -75,8 +64,8 @@ describe('MongodbIndexCreator', () => {
 
 	const executeForClients = clientCode => Handler.handle(MongoDBIndexCreator, { body: { clientCode } });
 
-	context('when valid indexes found in models', () => {
-		it('shouldn\'t create or drop any indexes if no index in model and collection', async () => {
+	context('When valid indexes found in models', () => {
+		it('Shouldn\'t create or drop any indexes if no index in model and collection', async () => {
 
 			loadClient();
 
@@ -94,7 +83,7 @@ describe('MongodbIndexCreator', () => {
 			sinon.spy(EmptyClientModel.prototype, 'dropIndex');
 			sinon.spy(EmptyClientModel.prototype, 'createIndex');
 
-			await execute();
+			await assert.doesNotReject(execute());
 
 			sinon.assert.notCalled(EmptyCoreModel.prototype.dropIndex);
 			sinon.assert.notCalled(EmptyCoreModel.prototype.createIndex);
@@ -121,7 +110,7 @@ describe('MongodbIndexCreator', () => {
 			sinon.spy(SimpleClientModel.prototype, 'dropIndex');
 			sinon.spy(SimpleClientModel.prototype, 'createIndex');
 
-			await execute();
+			await assert.doesNotReject(execute());
 
 			sinon.assert.notCalled(SimpleCoreModel.prototype.dropIndex);
 			sinon.assert.notCalled(SimpleCoreModel.prototype.createIndex);
@@ -130,7 +119,7 @@ describe('MongodbIndexCreator', () => {
 			sinon.assert.notCalled(SimpleClientModel.prototype.createIndex);
 		});
 
-		it('should create a core index', async () => {
+		it('Should create a core index', async () => {
 
 			mockModel(sinon, { 'simple.js': SimpleCoreModel });
 
@@ -142,7 +131,7 @@ describe('MongodbIndexCreator', () => {
 			sinon.stub(SimpleCoreModel.prototype, 'createIndex')
 				.resolves(true);
 
-			await execute();
+			await assert.doesNotReject(execute());
 
 			sinon.assert.notCalled(SimpleCoreModel.prototype.dropIndex);
 
@@ -152,12 +141,9 @@ describe('MongodbIndexCreator', () => {
 			});
 		});
 
-		it('should create a client index', async () => {
+		it('Should create a client index', async () => {
 
 			sinon.restore();
-
-			sinon.stub(Settings, 'get')
-				.returns(false);
 
 			loadClient();
 
@@ -171,7 +157,7 @@ describe('MongodbIndexCreator', () => {
 			sinon.stub(SimpleClientModel.prototype, 'createIndex')
 				.resolves(true);
 
-			await execute();
+			await assert.doesNotReject(execute());
 
 			sinon.assert.notCalled(SimpleClientModel.prototype.dropIndex);
 
@@ -181,7 +167,7 @@ describe('MongodbIndexCreator', () => {
 			});
 		});
 
-		it('should drop a core index', async () => {
+		it('Should drop a core index', async () => {
 
 			mockModel(sinon, { 'empty.js': EmptyCoreModel });
 
@@ -196,14 +182,14 @@ describe('MongodbIndexCreator', () => {
 
 			sinon.spy(EmptyCoreModel.prototype, 'createIndex');
 
-			await execute();
+			await assert.doesNotReject(execute());
 
 			sinon.assert.calledOnceWithExactly(EmptyCoreModel.prototype.dropIndex, 'field');
 
 			sinon.assert.notCalled(EmptyCoreModel.prototype.createIndex);
 		});
 
-		it('should drop a client index', async () => {
+		it('Should drop a client index', async () => {
 
 			loadClient();
 
@@ -220,14 +206,14 @@ describe('MongodbIndexCreator', () => {
 
 			sinon.spy(EmptyClientModel.prototype, 'createIndex');
 
-			await execute();
+			await assert.doesNotReject(execute());
 
 			sinon.assert.calledOnceWithExactly(EmptyClientModel.prototype.dropIndex, 'oldIndex');
 
 			sinon.assert.notCalled(EmptyClientModel.prototype.createIndex);
 		});
 
-		it('should create and drop core indexes', async () => {
+		it('Should create and drop core indexes', async () => {
 
 			mockModel(sinon, { 'simple.js': SimpleCoreModel });
 
@@ -246,7 +232,7 @@ describe('MongodbIndexCreator', () => {
 			sinon.stub(SimpleCoreModel.prototype, 'createIndex')
 				.resolves(true);
 
-			await execute();
+			await assert.doesNotReject(execute());
 
 			sinon.assert.calledTwice(SimpleCoreModel.prototype.dropIndex);
 			sinon.assert.calledWith(SimpleCoreModel.prototype.dropIndex, 'oldIndex');
@@ -258,7 +244,7 @@ describe('MongodbIndexCreator', () => {
 			});
 		});
 
-		it('should create and drop client indexes', async () => {
+		it('Should create and drop client indexes', async () => {
 
 			loadClient();
 
@@ -280,7 +266,7 @@ describe('MongodbIndexCreator', () => {
 			sinon.stub(SimpleClientModel.prototype, 'createIndex')
 				.resolves(true);
 
-			await execute();
+			await assert.doesNotReject(execute());
 
 			sinon.assert.calledOnceWithExactly(SimpleClientModel.prototype.dropIndex, 'field');
 
@@ -290,44 +276,8 @@ describe('MongodbIndexCreator', () => {
 			});
 		});
 
-		it('should process only for received client in payload and ignoring core models', async () => {
-
-			loadClient();
-
-			mockModel(sinon, { 'simple.js': SimpleClientModel, 'core-simple.js': SimpleCoreModel });
-
-			sinon.stub(SimpleClientModel.prototype, 'getIndexes')
-				.resolves([defaultIndex]);
-
-			sinon.spy(SimpleClientModel.prototype, 'dropIndex');
-
-			sinon.stub(SimpleClientModel.prototype, 'createIndex')
-				.resolves(true);
-
-			sinon.spy(SimpleCoreModel.prototype, 'getIndexes');
-			sinon.spy(SimpleCoreModel.prototype, 'dropIndex');
-			sinon.spy(SimpleCoreModel.prototype, 'createIndex');
-
-			await executeForClients('the-client-code');
-
-			sinon.assert.notCalled(SimpleClientModel.prototype.dropIndex);
-
-			sinon.assert.calledOnceWithExactly(SimpleClientModel.prototype.createIndex, {
-				name: 'field',
-				key: { field: 1 }
-			});
-
-			sinon.assert.notCalled(SimpleCoreModel.prototype.getIndexes);
-			sinon.assert.notCalled(SimpleCoreModel.prototype.createIndex);
-			sinon.assert.notCalled(SimpleCoreModel.prototype.dropIndex);
-
-			sinon.assert.calledOnceWithExactly(ClientModel.prototype.get, {
-				filters: { code: 'the-client-code' }
-			});
-		});
-
-		context('when collection is not created in database', () => {
-			it('should create a core index', async () => {
+		context('When collection is not created in database', () => {
+			it('Should create a core index', async () => {
 
 				mockModel(sinon, { 'simple.js': SimpleCoreModel });
 
@@ -340,7 +290,7 @@ describe('MongodbIndexCreator', () => {
 				sinon.stub(SimpleCoreModel.prototype, 'createIndex')
 					.resolves(true);
 
-				await execute();
+				await assert.doesNotReject(execute());
 
 				sinon.assert.notCalled(SimpleCoreModel.prototype.dropIndex);
 
@@ -351,8 +301,8 @@ describe('MongodbIndexCreator', () => {
 			});
 		});
 
-		context('when createIndex fails', () => {
-			it('should not rejects and continue the process', async () => {
+		context('When createIndex fails', () => {
+			it('Should not rejects and continue the process when createIndex rejects', async () => {
 
 				loadClient();
 
@@ -401,7 +351,7 @@ describe('MongodbIndexCreator', () => {
 				sinon.stub(SimpleCoreModel.prototype, 'createIndex')
 					.rejects('Some error');
 
-				await execute();
+				await assert.doesNotReject(execute());
 
 				sinon.assert.calledTwice(SimpleClientModel.prototype.dropIndex);
 				sinon.assert.calledWith(SimpleClientModel.prototype.dropIndex, 'badIndex');
@@ -434,10 +384,32 @@ describe('MongodbIndexCreator', () => {
 					key: { field: 1 }
 				});
 			});
+
+			it('Should not reject when could not create index', async () => {
+
+				mockModel(sinon, { 'simple.js': SimpleCoreModel });
+
+				sinon.stub(SimpleCoreModel.prototype, 'getIndexes')
+					.resolves([defaultIndex]);
+
+				sinon.spy(SimpleCoreModel.prototype, 'dropIndex');
+
+				sinon.stub(SimpleCoreModel.prototype, 'createIndex')
+					.resolves(false);
+
+				await assert.doesNotReject(execute());
+
+				sinon.assert.notCalled(SimpleCoreModel.prototype.dropIndex);
+
+				sinon.assert.calledOnceWithExactly(SimpleCoreModel.prototype.createIndex, {
+					name: 'field',
+					key: { field: 1 }
+				});
+			});
 		});
 
-		context('when dropIndex fails', () => {
-			it('should not rejects and continue the process', async () => {
+		context('When dropIndex fails', () => {
+			it('Should not rejects and continue the process when dropIndex rejects', async () => {
 
 				mockModel(sinon, { 'simple.js': SimpleCoreModel });
 
@@ -453,7 +425,7 @@ describe('MongodbIndexCreator', () => {
 				sinon.stub(SimpleCoreModel.prototype, 'createIndex')
 					.resolves(true);
 
-				await execute();
+				await assert.doesNotReject(execute());
 
 				sinon.assert.calledOnceWithExactly(SimpleCoreModel.prototype.dropIndex, 'otherField');
 
@@ -462,10 +434,32 @@ describe('MongodbIndexCreator', () => {
 					key: { field: 1 }
 				});
 			});
+
+			it('Should not reject when could not drop index', async () => {
+
+				mockModel(sinon, { 'empty.js': EmptyCoreModel });
+
+				sinon.stub(EmptyCoreModel.prototype, 'getIndexes')
+					.resolves([defaultIndex, {
+						name: 'field',
+						key: { field: 1 }
+					}]);
+
+				sinon.stub(EmptyCoreModel.prototype, 'dropIndex')
+					.resolves(false);
+
+				sinon.spy(EmptyCoreModel.prototype, 'createIndex');
+
+				await assert.doesNotReject(execute());
+
+				sinon.assert.calledOnceWithExactly(EmptyCoreModel.prototype.dropIndex, 'field');
+
+				sinon.assert.notCalled(EmptyCoreModel.prototype.createIndex);
+			});
 		});
 
-		context('when clients not found', () => {
-			it('shouldn\'t process indexes', async () => {
+		context('When clients not found', () => {
+			it('Shouldn\'t process indexes', async () => {
 
 				mockRequire(Client.getRelativePath(), ClientModel);
 
@@ -485,13 +479,14 @@ describe('MongodbIndexCreator', () => {
 				sinon.assert.notCalled(SimpleClientModel.prototype.dropIndex);
 
 				sinon.assert.calledOnceWithExactly(ClientModel.prototype.get, {
+					fields: ['code'],
 					filters: { code: ['the-client-code', 'other-client-code'] }
 				});
 			});
 		});
 
-		context('when model client rejects', () => {
-			it('shouldn\'t process indexes', async () => {
+		context('When model client rejects', () => {
+			it('Shouldn\'t process indexes', async () => {
 
 				mockRequire(Client.getRelativePath(), ClientModel);
 
@@ -504,7 +499,7 @@ describe('MongodbIndexCreator', () => {
 				sinon.stub(SimpleClientModel.prototype, 'dropIndex');
 				sinon.stub(SimpleClientModel.prototype, 'createIndex');
 
-				await execute();
+				await assert.doesNotReject(execute());
 
 				sinon.assert.notCalled(SimpleClientModel.prototype.getIndexes);
 				sinon.assert.notCalled(SimpleClientModel.prototype.createIndex);
@@ -513,7 +508,7 @@ describe('MongodbIndexCreator', () => {
 		});
 	});
 
-	context('when invalid index found', () => {
+	context('When invalid index found', () => {
 
 		const validIndex = {
 			name: 'field',
@@ -576,14 +571,14 @@ describe('MongodbIndexCreator', () => {
 		});
 	});
 
-	context('when models files not found', () => {
-		it('shouldn\'t create indexes', async () => {
+	context('When models files not found', () => {
+		it('Shouldn\'t create indexes', async () => {
 
 			sinon.stub(Model.prototype, 'getIndexes');
 			sinon.stub(Model.prototype, 'dropIndex');
 			sinon.stub(Model.prototype, 'createIndex');
 
-			await execute();
+			await assert.doesNotReject(execute());
 
 			sinon.assert.notCalled(Model.prototype.getIndexes);
 			sinon.assert.notCalled(Model.prototype.dropIndex);
