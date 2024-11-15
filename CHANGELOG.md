@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [4.1.0] - 2024-11-15
+### Changed
+- Indexes queries optimization
+- Updated `@janiscommerce` dependencies
+- _Internal_ Using `node@18`
+- _Internal_ GitHub actions improved
+
 ## [4.1.0-beta.1] - 2024-11-12
 ### Fixed
 - Updated `@janiscommerce/model` avoid reject for client models

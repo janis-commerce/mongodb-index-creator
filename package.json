@@ -20,7 +20,7 @@
   "license": "ISC",
   "homepage": "https://github.com/janis-commerce/mongodb-index-creator.git#readme",
   "devDependencies": {
-    "@janiscommerce/model": "^8.8.0-beta.4",
+    "@janiscommerce/model": "^8.8.0",
     "eslint": "^8.57.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.31.0",
