@@ -19,10 +19,11 @@ const {
 	EmptyClientModel,
 	SimpleCoreModel,
 	EmptyCoreModel,
-	invalidIndexesModelGenerator
+	invalidIndexesModelGenerator,
+	NotModel
 } = require('./models');
 
-const { Client } = require('../lib/helpers');
+const { Client, IndexHelper } = require('../lib/helpers');
 
 const defaultIndex = require('./default-index.json');
 const MongodbIndexCreatorError = require('../lib/mongodb-index-creator-error');
@@ -505,6 +506,23 @@ describe('MongodbIndexCreator', () => {
 				sinon.assert.notCalled(SimpleClientModel.prototype.createIndex);
 				sinon.assert.notCalled(SimpleClientModel.prototype.dropIndex);
 			});
+		});
+	});
+
+	context('When invalid model found', () => {
+		it('Shouldn\'t process indexes for invalid model', async () => {
+
+			loadClient();
+
+			mockModel(sinon, { 'not-model.js': NotModel });
+
+			sinon.spy(IndexHelper.prototype, 'process');
+			sinon.spy(NotModel.prototype, 'isCore');
+
+			await assert.doesNotReject(execute());
+
+			sinon.assert.notCalled(IndexHelper.prototype.process);
+			sinon.assert.notCalled(NotModel.prototype.isCore);
 		});
 	});
 

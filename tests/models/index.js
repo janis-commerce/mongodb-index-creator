@@ -9,6 +9,8 @@ const SimpleCoreModel = require('./core/simple');
 const EmptyCoreModel = require('./core/empty');
 const invalidIndexesModelGenerator = require('./core/invalid-indexes');
 
+const NotModel = require('./not-model');
+
 const mockModel = require('./mock-model');
 
 module.exports = {
@@ -19,5 +21,6 @@ module.exports = {
 	ClientModel,
 	SimpleCoreModel,
 	EmptyCoreModel,
-	invalidIndexesModelGenerator
+	invalidIndexesModelGenerator,
+	NotModel
 };

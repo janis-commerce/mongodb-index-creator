@@ -6,9 +6,9 @@ const fs = require('fs');
 
 const { ModelHelper } = require('../../lib/helpers');
 
-module.exports = (sandbox, models) => {
+module.exports = (sinon, models) => {
 
-	sandbox.stub(fs, 'readdirSync')
+	sinon.stub(fs, 'readdirSync')
 		.returns(Object.keys(models));
 
 	Object.entries(models).forEach(([file, ModelClass]) => {
