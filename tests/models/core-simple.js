@@ -2,14 +2,14 @@
 
 const Model = require('@janiscommerce/model');
 
-module.exports = class SimpleModel extends Model {
+module.exports = class SimpleCoreModel extends Model {
 
 	get databaseKey() {
-		return 'default';
+		return 'core';
 	}
 
 	static get table() {
-		return 'simple';
+		return 'core-simple';
 	}
 
 	static get indexes() {
@@ -17,9 +17,5 @@ module.exports = class SimpleModel extends Model {
 			name: 'field',
 			key: { field: 1 }
 		}];
-	}
-
-	isCore() {
-		return false;
 	}
 };

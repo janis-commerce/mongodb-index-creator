@@ -1,26 +1,20 @@
 'use strict';
 
-const SimpleClientModel = require('./client/simple');
-const CompleteClientModel = require('./client/complete');
-const EmptyClientModel = require('./client/empty');
+const mockModel = require('./mock-model');
 
-const ClientModel = require('./core/client');
-const SimpleCoreModel = require('./core/simple');
-const EmptyCoreModel = require('./core/empty');
-const invalidIndexesModelGenerator = require('./core/invalid-indexes');
+const ClientSimpleModel = require('./client-simple');
+const ClientEmptyModel = require('./client-empty');
+
+const CoreEmptyModel = require('./core-empty');
+const CoreSimpleModel = require('./core-simple');
 
 const NotModel = require('./not-model');
 
-const mockModel = require('./mock-model');
-
 module.exports = {
 	mockModel,
-	SimpleClientModel,
-	CompleteClientModel,
-	EmptyClientModel,
-	ClientModel,
-	SimpleCoreModel,
-	EmptyCoreModel,
-	invalidIndexesModelGenerator,
+	ClientSimpleModel,
+	ClientEmptyModel,
+	CoreEmptyModel,
+	CoreSimpleModel,
 	NotModel
 };

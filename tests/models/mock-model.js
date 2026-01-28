@@ -4,7 +4,7 @@ const mockRequire = require('mock-require');
 const path = require('path');
 const fs = require('fs');
 
-const { ModelHelper } = require('../../lib/helpers');
+const ModelHelper = require('../../lib/model-helper');
 
 module.exports = (sinon, models) => {
 

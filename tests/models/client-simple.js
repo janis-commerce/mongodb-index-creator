@@ -2,28 +2,20 @@
 
 const Model = require('@janiscommerce/model');
 
-module.exports = class CompleteModel extends Model {
+module.exports = class SimpleModel extends Model {
 
 	get databaseKey() {
 		return 'default';
 	}
 
 	static get table() {
-		return 'complete';
+		return 'client-simple';
 	}
 
 	static get indexes() {
 		return [{
 			name: 'field',
 			key: { field: 1 }
-		}, {
-			name: 'foo_bar_unique',
-			key: { foo: 1, bar: 1 },
-			unique: true
 		}];
-	}
-
-	isCore() {
-		return false;
 	}
 };

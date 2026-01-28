@@ -9,8 +9,4 @@ module.exports = class NotModel {
 	static get table() {
 		return 'empty';
 	}
-
-	isCore() {
-		return true;
-	}
 };

@@ -11,7 +11,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
-          node-version: 18.x
+          node-version: 18
       - run: npm i
       - run: npm test
 
@@ -22,12 +22,16 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
-          node-version: 18.x
+          node-version: 18
           registry-url: https://registry.npmjs.org/
       - run: npm i
-      - run: |
-          TAG=$(echo $GITHUB_REF_NAME | grep -oP '^v\d+\.\d+\.\d+-?\K(\w+)?')
-          npm publish --tag ${TAG:-latest} --access public
+      - name: Publish to NPM
+        run: |
+          TAG=$(echo "${GITHUB_REF_NAME}" | grep -oP '(?<=-)[^-]+' || echo "")
+          if [ -z "$TAG" ]; then
+            TAG="latest"
+          fi
+          npm publish --tag "$TAG" --access public
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}
           SLACK_WEBHOOK: ${{secrets.slack_webhook}}
