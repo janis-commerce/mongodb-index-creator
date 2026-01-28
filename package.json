@@ -1,6 +1,6 @@
 {
   "name": "@janiscommerce/mongodb-index-creator",
-  "version": "4.1.1",
+  "version": "4.2.0-beta",
   "description": "A package to create MongoDB indexes using Janis Models",
   "main": "lib/index.js",
   "scripts": {
