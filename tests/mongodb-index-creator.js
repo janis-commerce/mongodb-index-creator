@@ -114,6 +114,40 @@ describe('MongodbIndexCreator', () => {
 
 	});
 
+	it('Should invoke IndexCreatorDispatcher function with deployData parameter if provided', async () => {
+
+		mockModel(sinon, {
+			'core-simple.js': CoreSimpleModel,
+			'client-simple.js': ClientSimpleModel
+		});
+
+		await Handler.handle(MongoDBIndexCreator, { body: { deployData: { version: '1.0.0' } } });
+
+		sinon.assert.calledOnceWithExactly(Invoker.serviceCall, 'devops', 'IndexCreatorDispatcher', {
+			serviceCode: 'test-service',
+			models: [
+				{
+					collectionName: 'core-simple',
+					databaseKey: 'core',
+					indexes: [{
+						name: 'field',
+						key: { field: 1 }
+					}]
+				},
+				{
+					collectionName: 'client-simple',
+					databaseKey: 'default',
+					indexes: [{
+						name: 'field',
+						key: { field: 1 }
+					}]
+				}
+			],
+			deployData: { version: '1.0.0' }
+		});
+
+	});
+
 	it('Should not invoke IndexCreatorDispatcher function if no models are found', async () => {
 
 		mockModel(sinon, {});

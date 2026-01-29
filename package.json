@@ -41,7 +41,6 @@
     "@janiscommerce/api-session": "^3.4.0",
     "@janiscommerce/lambda": "^6.3.0",
     "@janiscommerce/model": "^8.12.0",
-    "@janiscommerce/superstruct": "^1.2.2",
     "lllog": "^1.1.2"
   }
 }
