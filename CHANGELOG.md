@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [4.3.0] - 2026-01-29
+### Added
+- `deployData` parameter to the `MongoDBIndexCreator` class to pass deploy data to the `IndexCreatorDispatcher` function
+
+### Removed
+- `clientCode` struct validation
+
 ## [4.2.0] - 2026-01-29
 ### Changed
 - Using **Janis DevOps Service** to create indexes
