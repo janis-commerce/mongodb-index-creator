@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [4.2.0] - 2026-01-29
+### Changed
+- Using **Janis DevOps Service** to create indexes
+
 ## [4.1.1] - 2025-02-21
 ### Fixed
 - Now ignores files in model path when no `@janiscommerce/model` inheritance

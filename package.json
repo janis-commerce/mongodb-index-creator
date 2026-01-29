@@ -10,7 +10,8 @@
     "coverage": "nyc npm test",
     "coverage-ci": "export TEST_ENV=true; nyc --reporter=lcov --reporter=text-summary mocha --exit --recursive tests/",
     "lint": "eslint lib/ tests/",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "postpublish": "./.postpublish.sh"
   },
   "repository": {
     "type": "git",
